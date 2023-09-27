@@ -47,6 +47,7 @@ public class Pessoa {
   @JoinColumn(name = "endereco")
   private Endereco endereco;
 
-  //private List<Venda> vendas;
+  @OneToMany(mappedBy = "pessoa")
+  private List<Venda> vendas;
 
 }
