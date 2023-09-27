@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -39,8 +40,10 @@ public class Pessoa {
   @Column(name = "data_nascimento")
   private LocalDate dataNascimento;
 
+  @OneToMany(mappedBy = "pessoa")
+  private List<Telefone> telefones;
+
   //private Endereco endereco;
-  //private List<Telefone> telefones;
   //private List<Venda> vendas;
 
 }
