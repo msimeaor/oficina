@@ -47,8 +47,15 @@ public class Venda {
   @JoinColumn(name = "pessoa")
   private Pessoa pessoa;
 
+  @ManyToMany
+  @JoinTable(
+    name = "venda_servico",
+    joinColumns = @JoinColumn(name = "venda_id"),
+    inverseJoinColumns = @JoinColumn(name = "servico_id")
+  )
+  private List<Servico> servicos;
+
   //private Veiculo veiculo;
-  //private List<Servico> servicos;
   //private List<Anotacao> anotacoes;
 
 }
