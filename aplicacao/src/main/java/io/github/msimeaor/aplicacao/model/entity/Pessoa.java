@@ -43,7 +43,10 @@ public class Pessoa {
   @OneToMany(mappedBy = "pessoa")
   private List<Telefone> telefones;
 
-  //private Endereco endereco;
+  @ManyToOne
+  @JoinColumn(name = "endereco")
+  private Endereco endereco;
+
   //private List<Venda> vendas;
 
 }
