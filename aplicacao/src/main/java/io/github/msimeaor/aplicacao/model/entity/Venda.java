@@ -55,7 +55,10 @@ public class Venda {
   )
   private List<Servico> servicos;
 
-  //private Veiculo veiculo;
+  @ManyToOne
+  @JoinColumn(name = "veiculo")
+  private Veiculo veiculo;
+
   //private List<Anotacao> anotacoes;
 
 }
