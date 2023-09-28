@@ -26,6 +26,7 @@ public class Endereco {
   private String logradouro;
 
   @Enumerated(EnumType.STRING)
+  @Column
   private UFs uf;
 
   @OneToMany(mappedBy = "endereco")

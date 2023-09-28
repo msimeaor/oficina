@@ -25,7 +25,7 @@ public class Pessoa {
   @Column(name = "email", length = 100, unique = true)
   private String email;
 
-  @Column(nullable = false)
+  @Column
   private boolean inativo;
 
   @Column(name = "cpf", length = 14, unique = true)
