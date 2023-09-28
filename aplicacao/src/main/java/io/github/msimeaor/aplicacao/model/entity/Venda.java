@@ -59,6 +59,7 @@ public class Venda {
   @JoinColumn(name = "veiculo")
   private Veiculo veiculo;
 
-  //private List<Anotacao> anotacoes;
+  @OneToMany(mappedBy = "venda")
+  private List<Anotacao> anotacoes;
 
 }
