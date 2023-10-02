@@ -6,6 +6,6 @@ import org.springframework.http.ResponseEntity;
 
 public interface PessoaService {
 
-  ResponseEntity<PessoaResponseDTO> save(PessoaRequestDTO pessoaRequest );
+  ResponseEntity<PessoaResponseDTO> save( PessoaRequestDTO pessoaRequest, String placa );
 
 }
