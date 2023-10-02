@@ -10,6 +10,12 @@ import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,10 +27,15 @@ public class PessoaServiceImpl {
 
   private PessoaRepository repository;
   private VeiculoRepository veiculoRepository;
+  private PagedResourcesAssembler<PessoaResponseDTO> assembler;
 
-  public PessoaServiceImpl( PessoaRepository repository, VeiculoRepository veiculoRepository ) {
+  public PessoaServiceImpl( PessoaRepository repository,
+                            VeiculoRepository veiculoRepository,
+                            PagedResourcesAssembler<PessoaResponseDTO> assembler ) {
+
     this.repository = repository;
     this.veiculoRepository = veiculoRepository;
+    this.assembler = assembler;
   }
 
   /*
@@ -66,6 +77,27 @@ public class PessoaServiceImpl {
             .findById(id)).withSelfRel());
 
     return new ResponseEntity<>(pessoaResponse, HttpStatus.OK);
+  }
+
+  public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll( Pageable pageable ) {
+    Page<Pessoa> pessoas = repository.findAll(pageable);
+    if (pessoas.isEmpty()) {
+      throw new EmptyListException("Não existem clientes cadastrados!");
+    }
+
+    Page<PessoaResponseDTO> pessoaResponseDTOS = pessoas.map(
+            pessoa -> DozerMapper.parseObject(pessoa, PessoaResponseDTO.class)
+    );
+
+    pessoaResponseDTOS.map(
+            pessoa -> pessoa.add(linkTo(methodOn(PessoaRestController.class)
+                    .findById(pessoa.getId())).withSelfRel())
+    );
+
+    Link link = linkTo(methodOn(PessoaRestController.class)
+            .findAll(pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
+
+    return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }
 
 }
