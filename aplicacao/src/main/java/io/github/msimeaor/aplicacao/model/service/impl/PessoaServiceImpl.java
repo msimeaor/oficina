@@ -1,6 +1,7 @@
 package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
+import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;

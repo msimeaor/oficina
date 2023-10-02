@@ -44,7 +44,7 @@ public class PessoaRestController {
   ) {
 
     var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
-    Pageable pageable = PageRequest.of(number, size, Sort.by(direction, "nome"));
+    Pageable pageable = PageRequest.of(number, size, Sort.by(sortDirection, "nome"));
     return service.findAll( pageable );
   }
 

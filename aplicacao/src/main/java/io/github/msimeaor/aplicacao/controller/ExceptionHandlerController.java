@@ -1,6 +1,7 @@
 package io.github.msimeaor.aplicacao.controller;
 
 import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
+import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,11 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(PessoaNotFoundException.class)
   public ResponseEntity<ExceptionResponse> pessoaNotFound(Exception ex, WebRequest request) {
+    return criarExceptionResponseERetornarResponseEntity(HttpStatus.NOT_FOUND, ex, request);
+  }
+
+  @ExceptionHandler(EmptyListException.class)
+  public ResponseEntity<ExceptionResponse> emptyList(Exception ex, WebRequest request) {
     return criarExceptionResponseERetornarResponseEntity(HttpStatus.NOT_FOUND, ex, request);
   }
 
