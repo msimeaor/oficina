@@ -12,5 +12,6 @@ public interface PessoaService {
   ResponseEntity<PessoaResponseDTO> save( PessoaRequestDTO pessoaRequest, String placa );
   ResponseEntity<PessoaResponseDTO> findById( Long id );
   ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll( Pageable pageable );
+  ResponseEntity<PessoaResponseDTO> update( PessoaRequestDTO pessoaRequest, Long id );
 
 }

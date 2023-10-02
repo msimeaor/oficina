@@ -11,6 +11,7 @@ import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -70,7 +71,7 @@ public class PessoaServiceImpl {
 
   public ResponseEntity<PessoaResponseDTO> findById( Long id ) {
     Pessoa pessoa = repository.findById(id)
-            .orElseThrow(() -> new PessoaNotFoundException("Não existem clientes para o id " + id));
+            .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
 
     PessoaResponseDTO pessoaResponse = DozerMapper.parseObject(pessoa, PessoaResponseDTO.class);
 
@@ -99,6 +100,21 @@ public class PessoaServiceImpl {
             .findAll(pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
+  }
+
+  @Transactional
+  public ResponseEntity<PessoaResponseDTO> update( PessoaRequestDTO pessoaRequest, Long id ) {
+    Pessoa pessoa = repository.findById(id)
+            .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
+
+    BeanUtils.copyProperties(pessoaRequest, pessoa);
+    pessoa.setId(id);
+    pessoa = repository.save(pessoa);
+
+    PessoaResponseDTO pessoaResponse = DozerMapper.parseObject(pessoa, PessoaResponseDTO.class);
+    pessoaResponse.add(linkTo(methodOn(PessoaRestController.class).findById(id)).withSelfRel());
+
+    return new ResponseEntity<>(pessoaResponse, HttpStatus.OK);
   }
 
 }

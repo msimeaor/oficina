@@ -4,7 +4,6 @@ import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.service.impl.PessoaServiceImpl;
 import jakarta.validation.Valid;
-import org.hibernate.boot.model.source.spi.Sortable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -46,6 +45,11 @@ public class PessoaRestController {
     var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
     Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, "nome"));
     return service.findAll( pageable );
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<PessoaResponseDTO> update( @RequestBody @Valid PessoaRequestDTO pessoaRequest, @PathVariable Long id ) {
+    return service.update(pessoaRequest, id);
   }
 
 }
