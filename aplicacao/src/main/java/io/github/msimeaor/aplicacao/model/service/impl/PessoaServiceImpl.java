@@ -42,7 +42,6 @@ public class PessoaServiceImpl {
 
   /*
     TODO desenvolver regra de persistir telefone e endereço caso seja passado no pessoaRequest
-    TODO descomentar após criar o método findById()
   */
   @Transactional
   public ResponseEntity<PessoaResponseDTO> save( PessoaRequestDTO pessoaRequest, String placa ) {
@@ -50,10 +49,9 @@ public class PessoaServiceImpl {
       throw new PessoaConflictException("Cliente já cadastrado!");
     }
 
-    var pessoa = DozerMapper.parseObject(pessoaRequest, Pessoa.class);
+    Pessoa pessoa = DozerMapper.parseObject(pessoaRequest, Pessoa.class);
     pessoa = repository.save(pessoa);
     var pessoaResponseDTO = DozerMapper.parseObject(pessoa, PessoaResponseDTO.class);
-
 
     pessoaResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
             .findById(pessoaResponseDTO.getId())).withSelfRel());
