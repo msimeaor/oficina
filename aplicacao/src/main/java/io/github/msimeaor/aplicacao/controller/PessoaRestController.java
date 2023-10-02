@@ -38,13 +38,13 @@ public class PessoaRestController {
 
   @GetMapping
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll(
-          @RequestParam(name = "number", defaultValue = "0") Integer number,
+          @RequestParam(name = "page", defaultValue = "0") Integer page,
           @RequestParam(name = "size", defaultValue = "10") Integer size,
           @RequestParam(name = "direction", defaultValue = "ASC") String direction
   ) {
 
     var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
-    Pageable pageable = PageRequest.of(number, size, Sort.by(sortDirection, "nome"));
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, "nome"));
     return service.findAll( pageable );
   }
 
