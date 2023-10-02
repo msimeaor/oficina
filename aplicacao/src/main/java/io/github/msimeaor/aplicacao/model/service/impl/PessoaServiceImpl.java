@@ -23,6 +23,7 @@ public class PessoaServiceImpl {
     this.veiculoRepository = veiculoRepository;
   }
 
+  // TODO desenvolver regra de persistir telefone e endereço caso seja passado no pessoaRequest
   @Transactional
   public ResponseEntity<PessoaResponseDTO> save( PessoaRequestDTO pessoaRequest, String placa ) {
     if (nomePessoaExiste(pessoaRequest.getNome()) && placaCarroExiste(placa)) {
