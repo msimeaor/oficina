@@ -2,6 +2,7 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
+import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
@@ -60,7 +61,6 @@ public class PessoaServiceImpl {
             .orElseThrow(() -> new PessoaNotFoundException("Não existem clientes para o id " + id));
 
     PessoaResponseDTO pessoaResponse = DozerMapper.parseObject(pessoa, PessoaResponseDTO.class);
-
 
     pessoaResponse.add(linkTo(methodOn(PessoaRestController.class)
             .findById(id)).withSelfRel());
