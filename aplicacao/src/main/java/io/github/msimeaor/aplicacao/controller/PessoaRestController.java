@@ -25,4 +25,9 @@ public class PessoaRestController {
     return service.save( pessoaRequest, placa );
   }
 
+  @GetMapping("/{id}")
+  public ResponseEntity<PessoaResponseDTO> findById( @PathVariable("id") Long id ) {
+    return service.findById( id );
+  }
+
 }

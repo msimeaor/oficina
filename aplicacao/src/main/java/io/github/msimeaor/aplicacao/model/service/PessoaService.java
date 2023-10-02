@@ -7,5 +7,6 @@ import org.springframework.http.ResponseEntity;
 public interface PessoaService {
 
   ResponseEntity<PessoaResponseDTO> save( PessoaRequestDTO pessoaRequest, String placa );
+  ResponseEntity<PessoaResponseDTO> findById( Long id );
 
 }
