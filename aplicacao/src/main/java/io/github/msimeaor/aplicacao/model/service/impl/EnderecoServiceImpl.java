@@ -1,6 +1,5 @@
 package io.github.msimeaor.aplicacao.model.service.impl;
 
-import io.github.msimeaor.aplicacao.controller.EnderecoRestController;
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
@@ -12,13 +11,17 @@ import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.service.EnderecoService;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class EnderecoServiceImpl implements EnderecoService {
@@ -31,6 +34,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     this.pessoaRepository = pessoaRepository;
   }
 
+  @Transactional
   public ResponseEntity<EnderecoResponseDTO> save( EnderecoRequestDTO enderecoRequest ) {
     if (logradouroExists(enderecoRequest.getLogradouro())) {
       throw new EnderecoConflictException("Logradouro já cadastrado!");
@@ -39,26 +43,23 @@ public class EnderecoServiceImpl implements EnderecoService {
     Endereco endereco = DozerMapper.parseObject(enderecoRequest, Endereco.class);
 
     List<Pessoa> pessoas = new ArrayList<>();
-    if (!enderecoRequest.getPessoas().isEmpty()) {
-      for (Long id : enderecoRequest.getPessoas()) {
-        Pessoa pessoa = pessoaRepository.findById(id)
-                .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
-
-        pessoas.add(pessoa);
-      }
-
-      endereco.setPessoas(pessoas);
+    if (enderecoRequest.getPessoas() != null) {
+      pessoas = enderecoRequest.getPessoas().stream()
+              .map(id -> pessoaRepository.findById(id)
+                      .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id)))
+              .collect(Collectors.toList());
     }
 
+    endereco.setPessoas(pessoas);
     endereco = repository.save(endereco);
 
     EnderecoResponseDTO enderecoResponse = DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
 
     if (!pessoas.isEmpty()) {
-      for (Pessoa p : pessoas) {
+      pessoas.forEach(pessoa -> {
         enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
-                .findById(p.getId())).withRel("Morador"));
-      }
+                .findById(pessoa.getId())).withRel("Morador(es)"));
+      });
     }
 
     return new ResponseEntity<>(enderecoResponse, HttpStatus.CREATED);
