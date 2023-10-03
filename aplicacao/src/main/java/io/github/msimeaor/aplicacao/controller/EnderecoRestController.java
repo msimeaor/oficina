@@ -5,10 +5,7 @@ import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
 import io.github.msimeaor.aplicacao.model.service.impl.EnderecoServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/enderecos")
@@ -23,6 +20,11 @@ public class EnderecoRestController {
   @PostMapping
   public ResponseEntity<EnderecoResponseDTO> save( @RequestBody @Valid EnderecoRequestDTO enderecoRequest ) {
     return service.save(enderecoRequest);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<EnderecoResponseDTO> findById( @PathVariable("id") Long id ) {
+    return service.findById(id);
   }
 
 }

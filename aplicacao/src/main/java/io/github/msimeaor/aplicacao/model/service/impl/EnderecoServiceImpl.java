@@ -2,7 +2,6 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
-import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.EnderecoRequestDTO;
@@ -59,6 +58,7 @@ public class EnderecoServiceImpl implements EnderecoService {
         pessoa.setEndereco(endereco);
         pessoaRepository.save(pessoa);
 
+        // TODO adicionar link HATEOAS para findById de EnderecoRestController
         enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
                 .findById(pessoa.getId())).withRel("Morador(es)"));
       }
@@ -69,6 +69,24 @@ public class EnderecoServiceImpl implements EnderecoService {
 
   private boolean logradouroExists( String logradouro ) {
     return repository.findByLogradouro(logradouro) != null;
+  }
+
+  public ResponseEntity<EnderecoResponseDTO> findById( Long id ) {
+    Endereco endereco = repository.findById(id)
+            .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + id));
+
+    EnderecoResponseDTO enderecoResponse = DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
+
+    if (endereco.getPessoas() != null) {
+      for (Pessoa pessoa : endereco.getPessoas()) {
+        enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
+                .findById(pessoa.getId())).withRel("Morador(es)"));
+      }
+    } else {
+      System.out.println("Null");
+    }
+
+    return new ResponseEntity<>(enderecoResponse, HttpStatus.OK);
   }
 
 }
