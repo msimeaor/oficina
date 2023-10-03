@@ -4,6 +4,7 @@ import io.github.msimeaor.aplicacao.controller.EnderecoRestController;
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
+import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.EnderecoRequestDTO;
@@ -14,6 +15,12 @@ import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.service.EnderecoService;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,10 +37,14 @@ public class EnderecoServiceImpl implements EnderecoService {
 
   private EnderecoRepository repository;
   private PessoaRepository pessoaRepository;
+  private PagedResourcesAssembler<EnderecoResponseDTO> assembler;
 
-  public EnderecoServiceImpl( EnderecoRepository repository, PessoaRepository pessoaRepository ) {
+  public EnderecoServiceImpl( EnderecoRepository repository,
+                              PessoaRepository pessoaRepository,
+                              PagedResourcesAssembler<EnderecoResponseDTO> assembler) {
     this.repository = repository;
     this.pessoaRepository = pessoaRepository;
+    this.assembler = assembler;
   }
 
   @Transactional
@@ -86,6 +97,37 @@ public class EnderecoServiceImpl implements EnderecoService {
     });
 
     return new ResponseEntity<>(enderecoResponse, HttpStatus.OK);
+  }
+
+  public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findAll( Pageable pageable ) {
+    Page<Endereco> enderecos = repository.findAll(pageable);
+    if (enderecos.isEmpty()) {
+      throw new EmptyListException("Não existem endereços cadastrados!");
+    }
+
+    Page<EnderecoResponseDTO> enderecoResponseDTOS = enderecos.map(
+            endereco -> DozerMapper.parseObject(endereco, EnderecoResponseDTO.class)
+    );
+
+    enderecoResponseDTOS.forEach(enderecoResponse -> {
+      enderecoResponse.add(linkTo(methodOn(EnderecoRestController.class)
+              .findById(enderecoResponse.getId())).withSelfRel());
+
+      for (Endereco endereco : enderecos) {
+        endereco.getPessoas().forEach(pessoa -> {
+          if (pessoa.getEndereco().getId() == enderecoResponse.getId()) {
+            enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
+                    .findById(pessoa.getId())).withRel("Morador(es)"));
+          }
+        });
+      }
+    });
+
+
+    Link link = linkTo(methodOn(EnderecoRestController.class).findAll(
+            pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
+
+    return new ResponseEntity<>(assembler.toModel(enderecoResponseDTOS, link), HttpStatus.OK);
   }
 
 }
