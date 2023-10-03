@@ -45,4 +45,12 @@ public class EnderecoRestController {
     return service.findAll(pageable);
   }
 
+  @PutMapping("/{id}")
+  public ResponseEntity<EnderecoResponseDTO> update( @RequestBody @Valid EnderecoRequestDTO enderecoRequest,
+                                                     @PathVariable("id") Long id ) {
+
+    return service.update(enderecoRequest, id);
+
+  }
+
 }

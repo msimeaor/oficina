@@ -15,6 +15,7 @@ import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.service.EnderecoService;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -128,6 +129,34 @@ public class EnderecoServiceImpl implements EnderecoService {
             pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
 
     return new ResponseEntity<>(assembler.toModel(enderecoResponseDTOS, link), HttpStatus.OK);
+  }
+
+  @Transactional
+  public ResponseEntity<EnderecoResponseDTO> update( EnderecoRequestDTO enderecoRequest, Long id ) {
+    if (logradouroExists(enderecoRequest.getLogradouro())) {
+      throw new EnderecoConflictException("Logradouro já cadastrado!");
+    }
+
+    Endereco endereco = repository.findById(id)
+            .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + id));
+
+    BeanUtils.copyProperties(enderecoRequest, endereco);
+    endereco.setId(id);
+    endereco = repository.save(endereco);
+
+    EnderecoResponseDTO enderecoResponse = DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
+
+    enderecoResponse.add(linkTo(methodOn(EnderecoRestController.class)
+            .findById(id)).withSelfRel());
+
+    if (endereco.getPessoas() != null) {
+      for (Pessoa pessoa : endereco.getPessoas()) {
+        enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
+                .findById(pessoa.getId())).withRel("Morador(es)"));
+      }
+    }
+
+    return new ResponseEntity<>(enderecoResponse, HttpStatus.OK);
   }
 
 }
