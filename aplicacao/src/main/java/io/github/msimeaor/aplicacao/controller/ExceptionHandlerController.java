@@ -1,6 +1,7 @@
 package io.github.msimeaor.aplicacao.controller;
 
 import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
+import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
 import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
@@ -32,6 +33,11 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
   @ExceptionHandler(EmptyListException.class)
   public ResponseEntity<ExceptionResponse> emptyList(Exception ex, WebRequest request) {
     return criarExceptionResponseERetornarResponseEntity(HttpStatus.NOT_FOUND, ex, request);
+  }
+
+  @ExceptionHandler(EnderecoConflictException.class)
+  public ResponseEntity<ExceptionResponse> enderecoConflict(Exception ex, WebRequest request) {
+    return criarExceptionResponseERetornarResponseEntity(HttpStatus.CONFLICT, ex, request);
   }
 
   private ResponseEntity<ExceptionResponse> criarExceptionResponseERetornarResponseEntity(
