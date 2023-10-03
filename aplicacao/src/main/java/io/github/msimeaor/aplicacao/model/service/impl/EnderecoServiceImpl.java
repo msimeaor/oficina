@@ -1,5 +1,6 @@
 package io.github.msimeaor.aplicacao.model.service.impl;
 
+import io.github.msimeaor.aplicacao.controller.EnderecoRestController;
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
@@ -78,14 +79,11 @@ public class EnderecoServiceImpl implements EnderecoService {
 
     EnderecoResponseDTO enderecoResponse = DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
 
-    if (endereco.getPessoas() != null) {
-      for (Pessoa pessoa : endereco.getPessoas()) {
-        enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
-                .findById(pessoa.getId())).withRel("Morador(es)"));
-      }
-    } else {
-      System.out.println("Null");
-    }
+    enderecoResponse.add(linkTo(methodOn(EnderecoRestController.class).findById(id)).withSelfRel());
+    endereco.getPessoas().forEach(pessoa -> {
+      enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
+              .findById(pessoa.getId())).withRel("Morador(es)"));
+    });
 
     return new ResponseEntity<>(enderecoResponse, HttpStatus.OK);
   }
