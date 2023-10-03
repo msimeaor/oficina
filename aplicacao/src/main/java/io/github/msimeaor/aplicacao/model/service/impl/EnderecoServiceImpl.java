@@ -2,6 +2,7 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
+import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.EnderecoRequestDTO;
