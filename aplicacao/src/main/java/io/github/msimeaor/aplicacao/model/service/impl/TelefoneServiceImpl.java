@@ -17,9 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class TelefoneServiceImpl implements TelefoneService {
@@ -65,6 +66,20 @@ public class TelefoneServiceImpl implements TelefoneService {
 
   private boolean numeroExists(String numero) {
     return repository.findByNumero(numero) != null;
+  }
+
+  public ResponseEntity<TelefoneResponseDTO> findById( Long id ) {
+    Telefone telefone = repository.findById(id)
+            .orElseThrow(() -> new TelefoneNotFoundException("Endereço não encontrado! ID: " + id));
+
+    TelefoneResponseDTO telefoneResponse = DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
+
+    telefoneResponse.add(linkTo(methodOn(TelefoneRestController.class)
+            .findById(telefoneResponse.getId())).withSelfRel());
+    telefoneResponse.add(linkTo(methodOn(PessoaRestController.class)
+            .findById(telefone.getPessoa().getId())).withRel("Proprietário(a)"));
+
+    return new ResponseEntity<>(telefoneResponse, HttpStatus.OK);
   }
 
 }

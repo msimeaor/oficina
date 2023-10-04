@@ -7,5 +7,6 @@ import org.springframework.http.ResponseEntity;
 public interface TelefoneService {
 
   ResponseEntity<TelefoneResponseDTO> save( TelefoneRequestDTO telefoneRequest );
+  ResponseEntity<TelefoneResponseDTO> findById( Long id );
 
 }
