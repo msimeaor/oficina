@@ -67,7 +67,12 @@ public class EnderecoServiceImpl implements EnderecoService {
 
     EnderecoResponseDTO enderecoResponse = DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
 
+    enderecoResponse.add(linkTo(methodOn(EnderecoRestController.class)
+            .findById(enderecoResponse.getId())).withSelfRel());
+
     if (!pessoas.isEmpty()) {
+      endereco.setPessoas(pessoas);
+
       for (Pessoa pessoa : pessoas) {
         pessoa.setEndereco(endereco);
         pessoaRepository.save(pessoa);
