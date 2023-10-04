@@ -45,4 +45,11 @@ public class TelefoneRestController {
     return service.findAll(pageable);
   }
 
+  @PutMapping("/{id}")
+  public ResponseEntity<TelefoneResponseDTO> update( @RequestBody @Valid TelefoneRequestDTO telefoneRequest,
+                                                     @PathVariable("id") Long id) {
+
+    return service.update(telefoneRequest, id);
+  }
+
 }
