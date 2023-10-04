@@ -55,10 +55,8 @@ public class TelefoneServiceImpl implements TelefoneService {
 
     TelefoneResponseDTO telefoneResponse = DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
 
-    /* TODO descomentar quando criar o endpoint findById
     telefoneResponse.add(linkTo(methodOn(TelefoneRestController.class)
             .findById(telefoneResponse.getId())).withSelfRel());
-    */
     telefoneResponse.add(linkTo(methodOn(PessoaRestController.class)
             .findById(telefone.getPessoa().getId())).withRel("Proprietário(a)"));
 
