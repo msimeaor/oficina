@@ -3,6 +3,7 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
 import io.github.msimeaor.aplicacao.controller.TelefoneRestController;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
+import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.TelefoneRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
