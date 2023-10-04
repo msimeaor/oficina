@@ -2,6 +2,7 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
 import io.github.msimeaor.aplicacao.controller.TelefoneRestController;
+import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneNotFoundException;
@@ -14,6 +15,12 @@ import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.TelefoneRepository;
 import io.github.msimeaor.aplicacao.model.service.TelefoneService;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,11 +35,14 @@ public class TelefoneServiceImpl implements TelefoneService {
 
   private TelefoneRepository repository;
   private PessoaRepository pessoaRepository;
+  private PagedResourcesAssembler<TelefoneResponseDTO> assembler;
 
   public TelefoneServiceImpl(TelefoneRepository repository,
-                             PessoaRepository pessoaRepository) {
+                             PessoaRepository pessoaRepository,
+                             PagedResourcesAssembler<TelefoneResponseDTO> assembler) {
     this.repository = repository;
     this.pessoaRepository = pessoaRepository;
+    this.assembler = assembler;
   }
 
   @Transactional
@@ -79,6 +89,35 @@ public class TelefoneServiceImpl implements TelefoneService {
             .findById(telefone.getPessoa().getId())).withRel("Proprietário(a)"));
 
     return new ResponseEntity<>(telefoneResponse, HttpStatus.OK);
+  }
+
+  public ResponseEntity<PagedModel<EntityModel<TelefoneResponseDTO>>> findAll( Pageable pageable ) {
+    Page<Telefone> telefones = repository.findAll(pageable);
+    if (telefones.isEmpty()) {
+      throw new EmptyListException("Não existem telefones cadastrados!");
+    }
+
+    Page<TelefoneResponseDTO> telefoneResponseDTOS = telefones.map(
+            telefone -> DozerMapper.parseObject(telefone, TelefoneResponseDTO.class)
+    );
+
+    telefoneResponseDTOS.forEach(telefone -> {
+      telefone.add(linkTo(methodOn(TelefoneRestController.class)
+              .findById(telefone.getId())).withSelfRel());
+
+      for (Telefone t : telefones) {
+        if (t.getId() == telefone.getId()) {
+          telefone.add(linkTo(methodOn(PessoaRestController.class)
+                  .findById(t.getPessoa().getId())).withRel("Propietário(a)"));
+        }
+      }
+    });
+
+    Link link = linkTo(methodOn(TelefoneRestController.class).findAll(
+            pageable.getPageNumber(), pageable.getPageSize(), "ASC"
+    )).withSelfRel();
+
+    return new ResponseEntity<>(assembler.toModel(telefoneResponseDTOS, link), HttpStatus.OK);
   }
 
 }
