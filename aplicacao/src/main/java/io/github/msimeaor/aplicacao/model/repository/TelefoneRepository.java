@@ -4,6 +4,11 @@ import io.github.msimeaor.aplicacao.model.entity.Telefone;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface TelefoneRepository extends JpaRepository<Telefone, Long> {
+
+  Telefone findByNumero(String numero);
+
 }
