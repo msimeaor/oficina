@@ -7,6 +7,7 @@ import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictException;
+import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -47,8 +48,13 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler(TelefoneConflictException.class)
-  public ResponseEntity<ExceptionResponse> telefoneNotFound(Exception ex, WebRequest request) {
+  public ResponseEntity<ExceptionResponse> telefoneConflict(Exception ex, WebRequest request) {
     return criarExceptionResponseERetornarResponseEntity(HttpStatus.CONFLICT, ex, request);
+  }
+
+  @ExceptionHandler(TelefoneNotFoundException.class)
+  public ResponseEntity<ExceptionResponse> telefoneNotFound(Exception ex, WebRequest request) {
+    return criarExceptionResponseERetornarResponseEntity(HttpStatus.NOT_FOUND, ex, request);
   }
 
   private ResponseEntity<ExceptionResponse> criarExceptionResponseERetornarResponseEntity(
