@@ -24,7 +24,7 @@ public class TelefoneRestController {
 
   @GetMapping("/{id}")
   public ResponseEntity<TelefoneResponseDTO> findById( @PathVariable("id") Long id ) {
-    return service.findByid(id);
+    return service.findById(id);
   }
 
 }
