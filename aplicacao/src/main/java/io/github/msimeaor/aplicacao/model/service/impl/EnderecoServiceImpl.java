@@ -77,7 +77,6 @@ public class EnderecoServiceImpl implements EnderecoService {
         pessoa.setEndereco(endereco);
         pessoaRepository.save(pessoa);
 
-        // TODO adicionar link HATEOAS para findById de EnderecoRestController
         enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
                 .findById(pessoa.getId())).withRel("Morador(es)"));
       }
