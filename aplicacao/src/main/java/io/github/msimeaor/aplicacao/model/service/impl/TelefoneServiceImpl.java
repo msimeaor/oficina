@@ -12,6 +12,7 @@ import io.github.msimeaor.aplicacao.model.entity.Telefone;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.TelefoneRepository;
 import io.github.msimeaor.aplicacao.model.service.TelefoneService;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,27 +33,21 @@ public class TelefoneServiceImpl implements TelefoneService {
     this.pessoaRepository = pessoaRepository;
   }
 
+  @Transactional
   public ResponseEntity<TelefoneResponseDTO> save( TelefoneRequestDTO telefoneRequest ) {
     if (numeroExists(telefoneRequest.getNumero())) {
       throw new TelefoneConflictException("Numero já cadastrado!");
     }
 
-    Pessoa pessoa = pessoaRepository.findById(telefoneRequest.getPessoa())
+    Pessoa pessoa = pessoaRepository.findById(telefoneRequest.getPessoaId())
             .orElseThrow(() ->
-                    new PessoaNotFoundException("Cliente não encontrado! ID: " + telefoneRequest.getPessoa()));
+                    new PessoaNotFoundException("Cliente não encontrado! ID: " + telefoneRequest.getPessoaId()));
 
     Telefone telefone = DozerMapper.parseObject(telefoneRequest, Telefone.class);
     telefone.setPessoa(pessoa);
     telefone = repository.save(telefone);
 
-    List<Telefone> pessoaTelefones;
-
-    if (pessoa.getTelefones() == null) {
-      pessoaTelefones = new ArrayList<>();
-    } else {
-      pessoaTelefones = pessoa.getTelefones();
-    }
-
+    List<Telefone> pessoaTelefones = pessoa.getTelefones();
     pessoaTelefones.add(telefone);
     pessoa.setTelefones(pessoaTelefones);
 

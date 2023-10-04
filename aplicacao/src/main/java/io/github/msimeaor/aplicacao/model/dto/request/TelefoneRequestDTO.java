@@ -19,6 +19,6 @@ public class TelefoneRequestDTO {
   private String numero;
 
   @NotNull(message = "{error.message.notnull}")
-  private Long pessoa;
+  private Long pessoaId;
 
 }
