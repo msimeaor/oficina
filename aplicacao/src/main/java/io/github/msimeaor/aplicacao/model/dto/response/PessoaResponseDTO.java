@@ -20,8 +20,8 @@ public class PessoaResponseDTO extends RepresentationModel<PessoaResponseDTO> {
   private String cpf;
   private LocalDate dataNascimento;
   private String email;
-  private EnderecoResponseDTO endereco;
-  private List<TelefoneResponseDTO> telefones;
+  private EnderecoResponseDTO enderecoResponse;
+  private List<TelefoneResponseDTO> telefonesResponse;
   private boolean inativo;
 
   /* TODO descomentar essa lista após criar entidade venda
