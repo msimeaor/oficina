@@ -36,7 +36,6 @@ public class PessoaRequestDTO {
   @Past(message = "{error.message.invalid.date}")
   private LocalDate dataNascimento;
 
-  private List<Long> telefones;
-  private Long endereco;
+  private Long enderecoId;
 
 }

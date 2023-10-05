@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -19,11 +20,12 @@ public class PessoaResponseDTO extends RepresentationModel<PessoaResponseDTO> {
   private String cpf;
   private LocalDate dataNascimento;
   private String email;
-  /*TODO descomentar essas linhas após criar os DTOs correspondentes.
-  private EnderecoResponseDTO endereco;
-  private List<TelefoneResponseDTO> telefones;
+  private EnderecoResponseDTO enderecoResponse;
+  private List<TelefoneResponseDTO> telefonesResponse;
+  private boolean inativo;
+
+  /* TODO descomentar essa lista após criar entidade venda
   private List<VendaReponseDTO> vendas;
   */
-  private boolean inativo;
 
 }
