@@ -9,8 +9,10 @@ import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
+import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
+import io.github.msimeaor.aplicacao.model.entity.Telefone;
 import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
@@ -25,6 +27,9 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -90,12 +95,25 @@ public class PessoaServiceImpl {
     return DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
   }
 
-  //TODO habilitar pessoaResponseDTO para exibir os telefones e o endereço
+  private List<TelefoneResponseDTO> converterListaTelefoneEmListaTelefoneResponse(List<Telefone> telefones) {
+    if (telefones == null)
+      return null;
+
+    return telefones.stream().map(telefone -> {
+      return DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
+    }).collect(Collectors.toList());
+  }
+
   public ResponseEntity<PessoaResponseDTO> findById( Long id ) {
     Pessoa pessoa = repository.findById(id)
             .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
 
+    List<TelefoneResponseDTO> telefonesResponse = converterListaTelefoneEmListaTelefoneResponse(pessoa.getTelefones());
+    EnderecoResponseDTO enderecoResponse = converterEnderecoEmEnderecoResponseDTO(pessoa.getEndereco());
+
     PessoaResponseDTO pessoaResponse = DozerMapper.parseObject(pessoa, PessoaResponseDTO.class);
+    pessoaResponse.setTelefonesResponse(telefonesResponse);
+    pessoaResponse.setEnderecoResponse(enderecoResponse);
 
     pessoaResponse.add(linkTo(methodOn(PessoaRestController.class)
             .findById(id)).withSelfRel());
