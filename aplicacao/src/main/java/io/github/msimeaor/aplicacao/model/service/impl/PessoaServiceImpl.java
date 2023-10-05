@@ -19,6 +19,7 @@ import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -128,7 +129,7 @@ public class PessoaServiceImpl {
     }
 
     Page<PessoaResponseDTO> pessoaResponseDTOS = pessoas.map(
-            pessoa -> DozerMapper.parseObject(pessoa, PessoaResponseDTO.class)
+            pessoa -> converterPessoaEmPessoaResponseDTO(pessoa)
     );
 
     pessoaResponseDTOS.map(
@@ -140,6 +141,16 @@ public class PessoaServiceImpl {
             .findAll(pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
+  }
+
+  private PessoaResponseDTO converterPessoaEmPessoaResponseDTO(Pessoa pessoa) {
+    List<TelefoneResponseDTO> telefoneResponse = converterListaTelefoneEmListaTelefoneResponse(pessoa.getTelefones());
+    EnderecoResponseDTO enderecoResponse = converterEnderecoEmEnderecoResponseDTO(pessoa.getEndereco());
+
+    PessoaResponseDTO pessoaResponse = DozerMapper.parseObject(pessoa, PessoaResponseDTO.class);
+    pessoaResponse.setTelefonesResponse(telefoneResponse);
+    pessoaResponse.setEnderecoResponse(enderecoResponse);
+    return pessoaResponse;
   }
 
   @Transactional
