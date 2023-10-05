@@ -43,9 +43,9 @@ public class PessoaServiceImpl {
   private PagedResourcesAssembler<PessoaResponseDTO> assembler;
 
   public PessoaServiceImpl( PessoaRepository repository,
-                            VeiculoRepository veiculoRepository,
-                            EnderecoRepository enderecoRepository,
-                            PagedResourcesAssembler<PessoaResponseDTO> assembler ) {
+                             VeiculoRepository veiculoRepository,
+                             EnderecoRepository enderecoRepository,
+                             PagedResourcesAssembler<PessoaResponseDTO> assembler ) {
 
     this.repository = repository;
     this.veiculoRepository = veiculoRepository;
@@ -96,13 +96,6 @@ public class PessoaServiceImpl {
     return pessoaResponse;
   }
 
-  private EnderecoResponseDTO converterEnderecoEmEnderecoResponseDTO(Endereco endereco) {
-    if (endereco == null)
-      return null;
-
-    return DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
-  }
-
   private List<TelefoneResponseDTO> converterListaTelefoneEmListaTelefoneResponse(List<Telefone> telefones) {
     if (telefones == null)
       return null;
@@ -110,6 +103,13 @@ public class PessoaServiceImpl {
     return telefones.stream().map(telefone -> {
       return DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
     }).collect(Collectors.toList());
+  }
+
+  private EnderecoResponseDTO converterEnderecoEmEnderecoResponseDTO(Endereco endereco) {
+    if (endereco == null)
+      return null;
+
+    return DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
   }
 
   public ResponseEntity<PessoaResponseDTO> findById( Long id ) {
