@@ -54,16 +54,16 @@ public class EnderecoServiceImpl implements EnderecoService {
       throw new EnderecoConflictException("Logradouro já cadastrado!");
     }
 
-    Endereco endereco = DozerMapper.parseObject(enderecoRequest, Endereco.class);
-    endereco = repository.save(endereco);
-
     List<Pessoa> pessoas = new ArrayList<>();
-    if (enderecoRequest.getPessoas() != null) {
-      pessoas = enderecoRequest.getPessoas().stream()
+    if (enderecoRequest.getPessoasId() != null) {
+      pessoas = enderecoRequest.getPessoasId().stream()
               .map(id -> pessoaRepository.findById(id)
                       .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id)))
               .collect(Collectors.toList());
     }
+
+    Endereco endereco = DozerMapper.parseObject(enderecoRequest, Endereco.class);
+    endereco = repository.save(endereco);
 
     EnderecoResponseDTO enderecoResponse = DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
 

@@ -24,6 +24,6 @@ public class EnderecoRequestDTO {
   @NotNull(message = "{error.message.notnull}")
   private UFs uf;
 
-  private List<Long> pessoas;
+  private List<Long> pessoasId;
 
 }
