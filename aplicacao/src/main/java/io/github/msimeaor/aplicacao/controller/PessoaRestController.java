@@ -48,8 +48,23 @@ public class PessoaRestController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<PessoaResponseDTO> update( @RequestBody @Valid PessoaRequestDTO pessoaRequest, @PathVariable Long id ) {
+  public ResponseEntity<PessoaResponseDTO> update( @RequestBody @Valid PessoaRequestDTO pessoaRequest,
+                                                   @PathVariable Long id ) {
     return service.update(pessoaRequest, id);
+  }
+
+  @GetMapping("/findByNome")
+  public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNome(
+          @RequestParam(name = "nome", defaultValue = "") String nome,
+          @RequestParam(name = "page", defaultValue = "0") Integer page,
+          @RequestParam(name = "size", defaultValue = "5") Integer size,
+          @RequestParam(name = "direction", defaultValue = "ASC") String direction
+  ) {
+
+    var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, "nome"));
+
+    return service.findByNomeLike( nome, pageable );
   }
 
 }

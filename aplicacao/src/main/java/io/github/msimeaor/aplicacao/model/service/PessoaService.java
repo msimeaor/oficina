@@ -13,5 +13,6 @@ public interface PessoaService {
   ResponseEntity<PessoaResponseDTO> findById( Long id );
   ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll( Pageable pageable );
   ResponseEntity<PessoaResponseDTO> update( PessoaRequestDTO pessoaRequest, Long id );
+  ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNomeLike( String nome, Pageable pageable );
 
 }

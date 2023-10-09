@@ -130,19 +130,25 @@ public class PessoaServiceImpl {
       throw new EmptyListException("Não existem clientes cadastrados!");
     }
 
-    Page<PessoaResponseDTO> pessoaResponseDTOS = pessoas.map(
-            pessoa -> converterPessoaEmPessoaResponseDTO(pessoa)
-    );
-
-    pessoaResponseDTOS.map(
-            pessoa -> pessoa.add(linkTo(methodOn(PessoaRestController.class)
-                    .findById(pessoa.getId())).withSelfRel())
-    );
+    Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoas);
+    iterarPagePessoaResponseEAdicionarLinkHateoas(pessoaResponseDTOS);
 
     Link link = linkTo(methodOn(PessoaRestController.class)
             .findAll(pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
+  }
+
+  private Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
+    return pessoaPage.map(
+            this::converterPessoaEmPessoaResponseDTO
+    );
+  }
+
+  private void iterarPagePessoaResponseEAdicionarLinkHateoas(Page<PessoaResponseDTO> pessoaResponseDTOS) {
+    pessoaResponseDTOS.map(
+      pessoaResponseDTO -> pessoaResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
+                .findById(pessoaResponseDTO.getId())).withSelfRel()));
   }
 
   @Transactional
@@ -158,10 +164,28 @@ public class PessoaServiceImpl {
     pessoa = repository.save(pessoa);
 
     var pessoaResponse = converterPessoaEmPessoaResponseDTO(pessoa);
-
     pessoaResponse.add(linkTo(methodOn(PessoaRestController.class).findById(id)).withSelfRel());
 
     return new ResponseEntity<>(pessoaResponse, HttpStatus.OK);
+  }
+
+  public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNomeLike( String nome, Pageable pageable ) {
+    String formatedNome = "%" + nome + "%";
+    Page<Pessoa> pessoas = repository.findByNomeLike(formatedNome, pageable);
+    if (pessoas.isEmpty()) {
+      throw new EmptyListException("Não existem clientes que contenham esse nome!");
+    }
+
+    Page<PessoaResponseDTO> pessoaResponseDTOS = pessoas.map(
+            pessoa -> converterPessoaEmPessoaResponseDTO(pessoa)
+    );
+
+    iterarPagePessoaResponseEAdicionarLinkHateoas(pessoaResponseDTOS);
+
+    Link link = linkTo(methodOn(PessoaRestController.class).findAll(
+            pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
+
+    return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }
 
 }
