@@ -64,12 +64,8 @@ public class TelefoneServiceImpl implements TelefoneService {
     pessoaTelefones.add(telefone);
     pessoa.setTelefones(pessoaTelefones);
 
-    TelefoneResponseDTO telefoneResponse = DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
-
-    telefoneResponse.add(linkTo(methodOn(TelefoneRestController.class)
-            .findById(telefoneResponse.getId())).withSelfRel());
-    telefoneResponse.add(linkTo(methodOn(PessoaRestController.class)
-            .findById(telefone.getPessoa().getId())).withRel("Proprietário(a)"));
+    TelefoneResponseDTO telefoneResponse = converterTelefoneEmTelefoneResponseDTO(telefone);
+    criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
 
     return new ResponseEntity<>(telefoneResponse, HttpStatus.CREATED);
   }
@@ -78,16 +74,23 @@ public class TelefoneServiceImpl implements TelefoneService {
     return repository.findByNumero(numero) != null;
   }
 
+  private TelefoneResponseDTO converterTelefoneEmTelefoneResponseDTO(Telefone telefone) {
+    return DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
+  }
+
+  private void criarLinksHateoasSelfRelEProprietario(TelefoneResponseDTO telefoneResponse, Telefone telefone) {
+    telefoneResponse.add(linkTo(methodOn(TelefoneRestController.class)
+            .findById(telefoneResponse.getId())).withSelfRel());
+    telefoneResponse.add(linkTo(methodOn(PessoaRestController.class)
+            .findById(telefone.getPessoa().getId())).withRel("Proprietário"));
+  }
+
   public ResponseEntity<TelefoneResponseDTO> findById( Long id ) {
     Telefone telefone = repository.findById(id)
             .orElseThrow(() -> new TelefoneNotFoundException("Telefone não encontrado! ID: " + id));
 
-    TelefoneResponseDTO telefoneResponse = DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
-
-    telefoneResponse.add(linkTo(methodOn(TelefoneRestController.class)
-            .findById(telefoneResponse.getId())).withSelfRel());
-    telefoneResponse.add(linkTo(methodOn(PessoaRestController.class)
-            .findById(telefone.getPessoa().getId())).withRel("Proprietário(a)"));
+    TelefoneResponseDTO telefoneResponse = converterTelefoneEmTelefoneResponseDTO(telefone);
+    criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
 
     return new ResponseEntity<>(telefoneResponse, HttpStatus.OK);
   }
@@ -139,12 +142,8 @@ public class TelefoneServiceImpl implements TelefoneService {
     telefone.setId(id);
     telefone = repository.save(telefone);
 
-    TelefoneResponseDTO telefoneResponse = DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
-
-    telefoneResponse.add(linkTo(methodOn(TelefoneRestController.class)
-            .findById(telefoneResponse.getId())).withSelfRel());
-    telefoneResponse.add(linkTo(methodOn(PessoaRestController.class)
-            .findById(pessoa.getId())).withRel("Propietário(a)"));
+    TelefoneResponseDTO telefoneResponse = converterTelefoneEmTelefoneResponseDTO(telefone);
+    criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
 
     return new ResponseEntity<>(telefoneResponse, HttpStatus.OK);
   }
