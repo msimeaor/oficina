@@ -104,24 +104,24 @@ public class EnderecoServiceImpl implements EnderecoService {
   }
 
   private void atualizarPessoaRelacionandoEndereco(List<Pessoa> pessoas, Endereco endereco) {
-    pessoas.forEach(
-            pessoa -> pessoa.setEndereco(endereco)
-    );
+    if (pessoas != null) {
+      pessoas.forEach(
+              pessoa -> pessoa.setEndereco(endereco)
+      );
+    }
   }
 
   public ResponseEntity<EnderecoResponseDTO> findById( Long id ) {
-    Endereco endereco = repository.findById(id)
+    Endereco endereco = buscarEndereco(id);
+    EnderecoResponseDTO enderecoResponseDTO = criarEnderecoResponse(endereco);
+    criarLinksHateoasDeEnderecoResponseDTO(enderecoResponseDTO, endereco.getPessoas());
+
+    return new ResponseEntity<>(enderecoResponseDTO, HttpStatus.OK);
+  }
+
+  private Endereco buscarEndereco(Long id) {
+    return repository.findById(id)
             .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + id));
-
-    EnderecoResponseDTO enderecoResponse = DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
-
-    enderecoResponse.add(linkTo(methodOn(EnderecoRestController.class).findById(id)).withSelfRel());
-    endereco.getPessoas().forEach(pessoa -> {
-      enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
-              .findById(pessoa.getId())).withRel("Morador(es)"));
-    });
-
-    return new ResponseEntity<>(enderecoResponse, HttpStatus.OK);
   }
 
   public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findAll( Pageable pageable ) {
