@@ -122,30 +122,32 @@ public class PessoaServiceImpl {
   }
 
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll( Pageable pageable ) {
-    Page<Pessoa> pessoas = repository.findAll(pageable);
-    if (pessoas.isEmpty()) {
-      throw new EmptyListException("Não existem clientes cadastrados!");
-    }
-
+    Page<Pessoa> pessoas = criarPagePessoa(pageable);
     Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoas);
-    iterarPagePessoaResponseEAdicionarLinkHateoas(pessoaResponseDTOS);
-
-    Link link = linkTo(methodOn(PessoaRestController.class)
-            .findAll(pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
+    pessoaResponseDTOS.forEach(pessoaResponse -> criarLinksHateoasDePessoaResponseDTO(pessoaResponse));
+    Link link = criarLinkHateoasNavegacaoPorPaginas(pageable);
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }
 
+  private Page<Pessoa> criarPagePessoa(Pageable pageable) {
+    Page<Pessoa> pessoaPage = repository.findAll(pageable);
+    if (pessoaPage.isEmpty())
+      throw new EmptyListException("Não existem clientes cadastrados!");
+
+    return pessoaPage;
+  }
+
   private Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
     return pessoaPage.map(
-            this::criarPessoaResponseDTO
+            pessoa -> criarPessoaResponseDTO(pessoa)
     );
   }
 
-  private void iterarPagePessoaResponseEAdicionarLinkHateoas(Page<PessoaResponseDTO> pessoaResponseDTOS) {
-    pessoaResponseDTOS.map(
-      pessoaResponseDTO -> pessoaResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
-                .findById(pessoaResponseDTO.getId())).withSelfRel()));
+  private Link criarLinkHateoasNavegacaoPorPaginas(Pageable pageable) {
+    return linkTo(methodOn(PessoaRestController.class).findAll(
+            pageable.getPageNumber(), pageable.getPageSize(), "ASC"
+    )).withSelfRel();
   }
 
   @Transactional
@@ -177,7 +179,7 @@ public class PessoaServiceImpl {
             pessoa -> criarPessoaResponseDTO(pessoa)
     );
 
-    iterarPagePessoaResponseEAdicionarLinkHateoas(pessoaResponseDTOS);
+    pessoaResponseDTOS.forEach(pessoaResponse -> criarLinksHateoasDePessoaResponseDTO(pessoaResponse));
 
     Link link = linkTo(methodOn(PessoaRestController.class).findAll(
             pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
