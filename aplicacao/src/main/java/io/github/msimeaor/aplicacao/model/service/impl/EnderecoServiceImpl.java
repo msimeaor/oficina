@@ -26,7 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,43 +49,64 @@ public class EnderecoServiceImpl implements EnderecoService {
 
   @Transactional
   public ResponseEntity<EnderecoResponseDTO> save( EnderecoRequestDTO enderecoRequest ) {
-    if (logradouroExists(enderecoRequest.getLogradouro())) {
-      throw new EnderecoConflictException("Logradouro já cadastrado!");
-    }
+    validarLogradouro(enderecoRequest.getLogradouro());
+    List<Pessoa> pessoas = criarListaPessoaPorId(enderecoRequest.getPessoasId());
+    Endereco endereco = criarEnderecoESalvar(enderecoRequest, pessoas);
+    EnderecoResponseDTO enderecoResponseDTO = criarEnderecoResponse(endereco);
+    criarLinksHateoasDeEnderecoResponseDTO(enderecoResponseDTO, pessoas);
+    atualizarPessoaRelacionandoEndereco(pessoas, endereco);
 
-    List<Pessoa> pessoas = new ArrayList<>();
-    if (enderecoRequest.getPessoasId() != null) {
-      pessoas = enderecoRequest.getPessoasId().stream()
-              .map(id -> pessoaRepository.findById(id)
-                      .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id)))
-              .collect(Collectors.toList());
-    }
-
-    Endereco endereco = DozerMapper.parseObject(enderecoRequest, Endereco.class);
-    endereco = repository.save(endereco);
-
-    EnderecoResponseDTO enderecoResponse = DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
-
-    enderecoResponse.add(linkTo(methodOn(EnderecoRestController.class)
-            .findById(enderecoResponse.getId())).withSelfRel());
-
-    if (!pessoas.isEmpty()) {
-      endereco.setPessoas(pessoas);
-
-      for (Pessoa pessoa : pessoas) {
-        pessoa.setEndereco(endereco);
-        pessoaRepository.save(pessoa);
-
-        enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
-                .findById(pessoa.getId())).withRel("Morador(es)"));
-      }
-    }
-
-    return new ResponseEntity<>(enderecoResponse, HttpStatus.CREATED);
+    return new ResponseEntity<>(enderecoResponseDTO, HttpStatus.CREATED);
   }
 
-  private boolean logradouroExists( String logradouro ) {
-    return repository.findByLogradouro(logradouro) != null;
+  private void validarLogradouro(String logradouro) {
+    if (repository.findByLogradouro(logradouro) != null)
+      throw new EnderecoConflictException("Logradouro já cadastrado!");
+  }
+
+  private List<Pessoa> criarListaPessoaPorId(List<Long> pessoasId) {
+    if (pessoasId == null)
+      return null;
+
+    return pessoasId.stream().map((pessoaId) -> {
+      return pessoaRepository.findById(pessoaId)
+              .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + pessoaId));
+    }).collect(Collectors.toList());
+  }
+
+  private Endereco criarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas) {
+    Endereco endereco = DozerMapper.parseObject(enderecoRequestDTO, Endereco.class);
+    endereco.setPessoas(pessoas);
+    return repository.save(endereco);
+  }
+
+  private EnderecoResponseDTO criarEnderecoResponse(Endereco endereco) {
+    return DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
+  }
+
+  private void criarLinksHateoasDeEnderecoResponseDTO(EnderecoResponseDTO enderecoResponseDTO, List<Pessoa> pessoas) {
+    criarLinkHateoasMoradores(enderecoResponseDTO, pessoas);
+    criarLinkHateoasSelfRel(enderecoResponseDTO);
+  }
+
+  private void criarLinkHateoasMoradores(EnderecoResponseDTO enderecoResponseDTO, List<Pessoa> pessoas) {
+    if (pessoas != null) {
+      pessoas.forEach(
+              pessoa -> enderecoResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
+                      .findById(pessoa.getId())).withRel("Morador(es)"))
+      );
+    }
+  }
+
+  private void criarLinkHateoasSelfRel(EnderecoResponseDTO enderecoResponseDTO) {
+    enderecoResponseDTO.add(linkTo(methodOn(EnderecoRestController.class)
+            .findById(enderecoResponseDTO.getId())).withSelfRel());
+  }
+
+  private void atualizarPessoaRelacionandoEndereco(List<Pessoa> pessoas, Endereco endereco) {
+    pessoas.forEach(
+            pessoa -> pessoa.setEndereco(endereco)
+    );
   }
 
   public ResponseEntity<EnderecoResponseDTO> findById( Long id ) {
@@ -137,9 +157,7 @@ public class EnderecoServiceImpl implements EnderecoService {
 
   @Transactional
   public ResponseEntity<EnderecoResponseDTO> update( EnderecoRequestDTO enderecoRequest, Long id ) {
-    if (logradouroExists(enderecoRequest.getLogradouro())) {
-      throw new EnderecoConflictException("Logradouro já cadastrado!");
-    }
+    validarLogradouro(enderecoRequest.getLogradouro());
 
     Endereco endereco = repository.findById(id)
             .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + id));
