@@ -57,17 +57,9 @@ public class PessoaServiceImpl {
   @Transactional
   public ResponseEntity<PessoaResponseDTO> save( PessoaRequestDTO pessoaRequest, String placa ) {
     validarCadastroExistente(pessoaRequest.getNome(), placa);
-
-    Endereco endereco = criarEndereco(pessoaRequest.getEnderecoId());
-
-    Pessoa pessoa = DozerMapper.parseObject(pessoaRequest, Pessoa.class);
-    pessoa.setEndereco(endereco);
-    pessoa = repository.save(pessoa);
-
-    var pessoaResponseDTO = converterPessoaEmPessoaResponseDTO(pessoa);
-
-    pessoaResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
-            .findById(pessoaResponseDTO.getId())).withSelfRel());
+    Pessoa pessoa = criarPessoaESalvar(pessoaRequest);
+    PessoaResponseDTO pessoaResponseDTO = criarPessoaResponseDTO(pessoa);
+    criarLinksHateoasDePessoaResponseDTO(pessoaResponseDTO);
 
     return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.CREATED);
   }
@@ -77,26 +69,25 @@ public class PessoaServiceImpl {
       throw new PessoaConflictException("Cliente já cadastrado!");
   }
 
-  private Endereco criarEndereco(Long enderecoId) {
-    if (enderecoId == null)
-      return null;
+  private Pessoa criarPessoaESalvar(PessoaRequestDTO pessoaRequestDTO) {
+    Pessoa pessoa = DozerMapper.parseObject(pessoaRequestDTO, Pessoa.class);
+    pessoa.setEndereco(buscarEndereco(pessoaRequestDTO.getEnderecoId()));
+    return repository.save(pessoa);
+  }
 
+  private Endereco buscarEndereco(Long enderecoId) {
     return enderecoRepository.findById(enderecoId)
             .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + enderecoId));
   }
 
-  private PessoaResponseDTO converterPessoaEmPessoaResponseDTO(Pessoa pessoa) {
-    List<TelefoneResponseDTO> telefoneResponse = converterListaTelefoneEmListaTelefoneResponse(pessoa.getTelefones());
-    EnderecoResponseDTO enderecoResponse = converterEnderecoEmEnderecoResponseDTO(pessoa.getEndereco());
-
-    PessoaResponseDTO pessoaResponse = DozerMapper.parseObject(pessoa, PessoaResponseDTO.class);
-    pessoaResponse.setTelefonesResponse(telefoneResponse);
-    pessoaResponse.setEnderecoResponse(enderecoResponse);
-
-    return pessoaResponse;
+  private PessoaResponseDTO criarPessoaResponseDTO(Pessoa pessoa) {
+    PessoaResponseDTO pessoaResponseDTO = DozerMapper.parseObject(pessoa, PessoaResponseDTO.class);
+    pessoaResponseDTO.setTelefonesResponse(converterListaTelefoneEmListaTelefoneResponseDTO(pessoa.getTelefones()));
+    pessoaResponseDTO.setEnderecoResponse(converterEnderecoEmEnderecoResponseDTO(pessoa.getEndereco()));
+    return pessoaResponseDTO;
   }
 
-  private List<TelefoneResponseDTO> converterListaTelefoneEmListaTelefoneResponse(List<Telefone> telefones) {
+  private List<TelefoneResponseDTO> converterListaTelefoneEmListaTelefoneResponseDTO(List<Telefone> telefones) {
     if (telefones == null)
       return null;
 
@@ -112,11 +103,16 @@ public class PessoaServiceImpl {
     return DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
   }
 
+  private void criarLinksHateoasDePessoaResponseDTO(PessoaResponseDTO pessoaResponseDTO) {
+    pessoaResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
+            .findById(pessoaResponseDTO.getId())).withSelfRel());
+  }
+
   public ResponseEntity<PessoaResponseDTO> findById( Long id ) {
     Pessoa pessoa = repository.findById(id)
             .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
 
-    var pessoaResponse = converterPessoaEmPessoaResponseDTO(pessoa);
+    var pessoaResponse = criarPessoaResponseDTO(pessoa);
 
     pessoaResponse.add(linkTo(methodOn(PessoaRestController.class)
             .findById(id)).withSelfRel());
@@ -141,7 +137,7 @@ public class PessoaServiceImpl {
 
   private Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
     return pessoaPage.map(
-            this::converterPessoaEmPessoaResponseDTO
+            this::criarPessoaResponseDTO
     );
   }
 
@@ -156,14 +152,14 @@ public class PessoaServiceImpl {
     Pessoa pessoa = repository.findById(id)
             .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
 
-    Endereco endereco = criarEndereco(pessoaRequest.getEnderecoId());
+    Endereco endereco = buscarEndereco(pessoaRequest.getEnderecoId());
 
     BeanUtils.copyProperties(pessoaRequest, pessoa);
     pessoa.setId(id);
     pessoa.setEndereco(endereco);
     pessoa = repository.save(pessoa);
 
-    var pessoaResponse = converterPessoaEmPessoaResponseDTO(pessoa);
+    var pessoaResponse = criarPessoaResponseDTO(pessoa);
     pessoaResponse.add(linkTo(methodOn(PessoaRestController.class).findById(id)).withSelfRel());
 
     return new ResponseEntity<>(pessoaResponse, HttpStatus.OK);
@@ -177,7 +173,7 @@ public class PessoaServiceImpl {
     }
 
     Page<PessoaResponseDTO> pessoaResponseDTOS = pessoas.map(
-            pessoa -> converterPessoaEmPessoaResponseDTO(pessoa)
+            pessoa -> criarPessoaResponseDTO(pessoa)
     );
 
     iterarPagePessoaResponseEAdicionarLinkHateoas(pessoaResponseDTOS);
