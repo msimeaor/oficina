@@ -125,34 +125,44 @@ public class EnderecoServiceImpl implements EnderecoService {
   }
 
   public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findAll( Pageable pageable ) {
-    Page<Endereco> enderecos = repository.findAll(pageable);
-    if (enderecos.isEmpty()) {
-      throw new EmptyListException("Não existem endereços cadastrados!");
-    }
-
-    Page<EnderecoResponseDTO> enderecoResponseDTOS = enderecos.map(
-            endereco -> DozerMapper.parseObject(endereco, EnderecoResponseDTO.class)
-    );
-
-    enderecoResponseDTOS.forEach(enderecoResponse -> {
-      enderecoResponse.add(linkTo(methodOn(EnderecoRestController.class)
-              .findById(enderecoResponse.getId())).withSelfRel());
-
-      for (Endereco endereco : enderecos) {
-        endereco.getPessoas().forEach(pessoa -> {
-          if (pessoa.getEndereco().getId() == enderecoResponse.getId()) {
-            enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
-                    .findById(pessoa.getId())).withRel("Morador(es)"));
-          }
-        });
-      }
-    });
-
-
-    Link link = linkTo(methodOn(EnderecoRestController.class).findAll(
-            pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
+    Page<Endereco> enderecoPage = criarPageEndereco(pageable);
+    Page<EnderecoResponseDTO> enderecoResponseDTOS = converterPageEnderecoEmPageEnderecoResponseDTO(enderecoPage);
+    criarLinksHateoasPageEnderecoResponseDTO(enderecoResponseDTOS, enderecoPage);
+    Link link = criarLinkHateoasNavegacaoEntrePaginas(pageable);
 
     return new ResponseEntity<>(assembler.toModel(enderecoResponseDTOS, link), HttpStatus.OK);
+  }
+
+  private Page<Endereco> criarPageEndereco(Pageable pageable) {
+    Page<Endereco> enderecoPage = repository.findAll(pageable);
+    if (enderecoPage.isEmpty())
+      throw new EmptyListException("Não existem endereços cadastrados!");
+
+    return enderecoPage;
+  }
+
+  private Page<EnderecoResponseDTO> converterPageEnderecoEmPageEnderecoResponseDTO(Page<Endereco> enderecoPage) {
+    return enderecoPage.map(
+            endereco -> DozerMapper.parseObject(endereco, EnderecoResponseDTO.class)
+    );
+  }
+
+  private void criarLinksHateoasPageEnderecoResponseDTO(Page<EnderecoResponseDTO> enderecoResponseDTOS,
+                                                        Page<Endereco> enderecoPage) {
+
+    enderecoResponseDTOS.forEach(enderecoResponse -> {
+      enderecoPage.forEach(endereco -> {
+        if (enderecoResponse.getId() == endereco.getId()) {
+          criarLinksHateoasDeEnderecoResponseDTO(enderecoResponse, endereco.getPessoas());
+        }
+      });
+    });
+  }
+
+  private Link criarLinkHateoasNavegacaoEntrePaginas(Pageable pageable) {
+    return linkTo(methodOn(EnderecoRestController.class).findAll(
+            pageable.getPageNumber(), pageable.getPageSize(), "ASC"
+    )).withSelfRel();
   }
 
   @Transactional
