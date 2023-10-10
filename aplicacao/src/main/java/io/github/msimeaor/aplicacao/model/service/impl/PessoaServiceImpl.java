@@ -152,20 +152,20 @@ public class PessoaServiceImpl {
 
   @Transactional
   public ResponseEntity<PessoaResponseDTO> update( PessoaRequestDTO pessoaRequest, Long id ) {
-    Pessoa pessoa = repository.findById(id)
-            .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
-
+    Pessoa pessoa = buscarPessoa(id);
     Endereco endereco = buscarEndereco(pessoaRequest.getEnderecoId());
+    pessoa = atualizarDadosPessoaESalvar(pessoaRequest, pessoa, endereco);
+    PessoaResponseDTO pessoaResponseDTO = criarPessoaResponseDTO(pessoa);
+    criarLinksHateoasDePessoaResponseDTO(pessoaResponseDTO);
 
-    BeanUtils.copyProperties(pessoaRequest, pessoa);
-    pessoa.setId(id);
-    pessoa.setEndereco(endereco);
-    pessoa = repository.save(pessoa);
+    return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.OK);
+  }
 
-    var pessoaResponse = criarPessoaResponseDTO(pessoa);
-    pessoaResponse.add(linkTo(methodOn(PessoaRestController.class).findById(id)).withSelfRel());
-
-    return new ResponseEntity<>(pessoaResponse, HttpStatus.OK);
+  private Pessoa atualizarDadosPessoaESalvar(PessoaRequestDTO pessoaRequestDTO, Pessoa pessoa, Endereco endereco) {
+    Pessoa p = DozerMapper.parseObject(pessoaRequestDTO, Pessoa.class);
+    p.setId(pessoa.getId());
+    p.setEndereco(endereco);
+    return repository.save(p);
   }
 
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNomeLike( String nome, Pageable pageable ) {
