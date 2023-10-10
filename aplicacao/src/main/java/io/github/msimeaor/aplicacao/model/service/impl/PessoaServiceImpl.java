@@ -151,19 +151,18 @@ public class PessoaServiceImpl {
 
   @Transactional
   public ResponseEntity<PessoaResponseDTO> update( PessoaRequestDTO pessoaRequest, Long id ) {
-    Pessoa pessoa = buscarPessoa(id);
-    Endereco endereco = buscarEndereco(pessoaRequest.getEnderecoId());
-    pessoa = atualizarDadosPessoaESalvar(pessoaRequest, pessoa, endereco);
+    buscarPessoa(id);
+    Pessoa pessoa = atualizarDadosPessoaESalvar(pessoaRequest, id);
     PessoaResponseDTO pessoaResponseDTO = criarPessoaResponseDTO(pessoa);
     criarLinksHateoasDePessoaResponseDTO(pessoaResponseDTO);
 
     return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.OK);
   }
 
-  private Pessoa atualizarDadosPessoaESalvar(PessoaRequestDTO pessoaRequestDTO, Pessoa pessoa, Endereco endereco) {
+  private Pessoa atualizarDadosPessoaESalvar(PessoaRequestDTO pessoaRequestDTO, Long id) {
     Pessoa p = DozerMapper.parseObject(pessoaRequestDTO, Pessoa.class);
-    p.setId(pessoa.getId());
-    p.setEndereco(endereco);
+    p.setId(id);
+    p.setEndereco(buscarEndereco(pessoaRequestDTO.getEnderecoId()));
     return repository.save(p);
   }
 
