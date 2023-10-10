@@ -17,7 +17,6 @@ import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -170,21 +169,20 @@ public class PessoaServiceImpl {
 
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNomeLike( String nome, Pageable pageable ) {
     String formatedNome = "%" + nome + "%";
-    Page<Pessoa> pessoas = repository.findByNomeLike(formatedNome, pageable);
-    if (pessoas.isEmpty()) {
-      throw new EmptyListException("Não existem clientes que contenham esse nome!");
-    }
-
-    Page<PessoaResponseDTO> pessoaResponseDTOS = pessoas.map(
-            pessoa -> criarPessoaResponseDTO(pessoa)
-    );
-
+    Page<Pessoa> pessoaPage = criarPagePessoaComFindByNomeLike(formatedNome, pageable);
+    Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoaPage);
     pessoaResponseDTOS.forEach(pessoaResponse -> criarLinksHateoasDePessoaResponseDTO(pessoaResponse));
-
-    Link link = linkTo(methodOn(PessoaRestController.class).findAll(
-            pageable.getPageNumber(), pageable.getPageSize(), "ASC")).withSelfRel();
+    Link link = criarLinkHateoasNavegacaoPorPaginas(pageable);
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
+  }
+
+  private Page<Pessoa> criarPagePessoaComFindByNomeLike(String nome, Pageable pageable) {
+    Page<Pessoa> pessoaPage = repository.findByNomeLike(nome, pageable);
+    if (pessoaPage.isEmpty())
+      throw new PessoaNotFoundException("Não existem clientes cadastrados!");
+
+    return pessoaPage;
   }
 
 }
