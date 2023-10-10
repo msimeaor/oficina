@@ -109,15 +109,16 @@ public class PessoaServiceImpl {
   }
 
   public ResponseEntity<PessoaResponseDTO> findById( Long id ) {
-    Pessoa pessoa = repository.findById(id)
+    Pessoa pessoa = buscarPessoa(id);
+    PessoaResponseDTO pessoaResponseDTO = criarPessoaResponseDTO(pessoa);
+    criarLinksHateoasDePessoaResponseDTO(pessoaResponseDTO);
+
+    return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.OK);
+  }
+
+  private Pessoa buscarPessoa(Long id) {
+    return repository.findById(id)
             .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
-
-    var pessoaResponse = criarPessoaResponseDTO(pessoa);
-
-    pessoaResponse.add(linkTo(methodOn(PessoaRestController.class)
-            .findById(id)).withSelfRel());
-
-    return new ResponseEntity<>(pessoaResponse, HttpStatus.OK);
   }
 
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll( Pageable pageable ) {
