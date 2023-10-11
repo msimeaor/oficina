@@ -152,23 +152,20 @@ public class TelefoneServiceImpl implements TelefoneService {
   @Transactional
   public ResponseEntity<TelefoneResponseDTO> update( TelefoneRequestDTO telefoneRequest, Long id ) {
     validarNumero(telefoneRequest.getNumero());
+    Pessoa pessoa = buscarPessoa(telefoneRequest.getPessoaId());
+    buscarTelefone(id);
+    Telefone telefone = atualizarDadosTelefone(telefoneRequest, pessoa, id);
+    TelefoneResponseDTO telefoneResponseDTO = criarTelefoneResponseDTO(telefone);
+    criarLinksHateoasSelfRelEProprietario(telefoneResponseDTO, telefone);
 
-    Pessoa pessoa = pessoaRepository.findById(telefoneRequest.getPessoaId())
-            .orElseThrow(() ->
-                    new PessoaNotFoundException("Cliente não encontrado! ID: " + telefoneRequest.getPessoaId()));
+    return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.OK);
+  }
 
-    Telefone telefone = repository.findById(id)
-            .orElseThrow(() -> new TelefoneNotFoundException("Telefone não encontrado! ID: " + id));
-
-    BeanUtils.copyProperties(telefoneRequest, telefone);
-    telefone.setPessoa(pessoa);
+  private Telefone atualizarDadosTelefone(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa, Long id) {
+    Telefone telefone = DozerMapper.parseObject(telefoneRequestDTO, Telefone.class);
     telefone.setId(id);
-    telefone = repository.save(telefone);
-
-    TelefoneResponseDTO telefoneResponse = criarTelefoneResponseDTO(telefone);
-    criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
-
-    return new ResponseEntity<>(telefoneResponse, HttpStatus.OK);
+    telefone.setPessoa(pessoa);
+    return repository.save(telefone);
   }
 
 }
