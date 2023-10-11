@@ -48,40 +48,54 @@ public class TelefoneServiceImpl implements TelefoneService {
 
   @Transactional
   public ResponseEntity<TelefoneResponseDTO> save( TelefoneRequestDTO telefoneRequest ) {
-    if (numeroExists(telefoneRequest.getNumero())) {
+    validarNumero(telefoneRequest.getNumero());
+    Pessoa pessoa = buscarPessoa(telefoneRequest.getPessoaId());
+    Telefone telefone = criarTelefoneESalvar(telefoneRequest, pessoa);
+    atualizarListaDeTelefonesDaPessoa(pessoa, telefone);
+    TelefoneResponseDTO telefoneResponseDTO = criarTelefoneResponseDTO(telefone);
+    criarLinksHateoasSelfRelEProprietario(telefoneResponseDTO, telefone);
+
+    return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.CREATED);
+  }
+
+  private void validarNumero(String numero) {
+    if (repository.findByNumero(numero) != null)
       throw new TelefoneConflictException("Numero já cadastrado!");
-    }
+  }
 
-    Pessoa pessoa = pessoaRepository.findById(telefoneRequest.getPessoaId())
-            .orElseThrow(() ->
-                    new PessoaNotFoundException("Cliente não encontrado! ID: " + telefoneRequest.getPessoaId()));
+  private Pessoa buscarPessoa(Long id) {
+    return pessoaRepository.findById(id)
+            .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
+  }
 
-    Telefone telefone = DozerMapper.parseObject(telefoneRequest, Telefone.class);
+  private Telefone criarTelefoneESalvar(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa) {
+    Telefone telefone = DozerMapper.parseObject(telefoneRequestDTO, Telefone.class);
     telefone.setPessoa(pessoa);
-    telefone = repository.save(telefone);
-
-    List<Telefone> pessoaTelefones = pessoa.getTelefones();
-    pessoaTelefones.add(telefone);
-    pessoa.setTelefones(pessoaTelefones);
-
-    TelefoneResponseDTO telefoneResponse = converterTelefoneEmTelefoneResponseDTO(telefone);
-    criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
-
-    return new ResponseEntity<>(telefoneResponse, HttpStatus.CREATED);
+    return repository.save(telefone);
   }
 
-  private boolean numeroExists(String numero) {
-    return repository.findByNumero(numero) != null;
+  private void atualizarListaDeTelefonesDaPessoa(Pessoa pessoa, Telefone telefone) {
+    List<Telefone> telefones = pessoa.getTelefones();
+    telefones.add(telefone);
+    pessoa.setTelefones(telefones);
   }
 
-  private TelefoneResponseDTO converterTelefoneEmTelefoneResponseDTO(Telefone telefone) {
+  private TelefoneResponseDTO criarTelefoneResponseDTO(Telefone telefone) {
     return DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
   }
 
   private void criarLinksHateoasSelfRelEProprietario(TelefoneResponseDTO telefoneResponse, Telefone telefone) {
-    telefoneResponse.add(linkTo(methodOn(TelefoneRestController.class)
-            .findById(telefoneResponse.getId())).withSelfRel());
-    telefoneResponse.add(linkTo(methodOn(PessoaRestController.class)
+    criarLinkHateoasSelfrel(telefoneResponse);
+    criarLinkHateoasProprietario(telefoneResponse, telefone);
+  }
+
+  private void criarLinkHateoasSelfrel(TelefoneResponseDTO telefoneResponseDTO) {
+    telefoneResponseDTO.add(linkTo(methodOn(TelefoneRestController.class)
+            .findById(telefoneResponseDTO.getId())).withSelfRel());
+  }
+
+  private void criarLinkHateoasProprietario(TelefoneResponseDTO telefoneResponseDTO, Telefone telefone) {
+    telefoneResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
             .findById(telefone.getPessoa().getId())).withRel("Proprietário"));
   }
 
@@ -89,7 +103,7 @@ public class TelefoneServiceImpl implements TelefoneService {
     Telefone telefone = repository.findById(id)
             .orElseThrow(() -> new TelefoneNotFoundException("Telefone não encontrado! ID: " + id));
 
-    TelefoneResponseDTO telefoneResponse = converterTelefoneEmTelefoneResponseDTO(telefone);
+    TelefoneResponseDTO telefoneResponse = criarTelefoneResponseDTO(telefone);
     criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
 
     return new ResponseEntity<>(telefoneResponse, HttpStatus.OK);
@@ -126,9 +140,7 @@ public class TelefoneServiceImpl implements TelefoneService {
 
   @Transactional
   public ResponseEntity<TelefoneResponseDTO> update( TelefoneRequestDTO telefoneRequest, Long id ) {
-    if (numeroExists(telefoneRequest.getNumero())) {
-      throw new TelefoneConflictException("Numero já cadastrado!");
-    }
+    validarNumero(telefoneRequest.getNumero());
 
     Pessoa pessoa = pessoaRepository.findById(telefoneRequest.getPessoaId())
             .orElseThrow(() ->
@@ -142,7 +154,7 @@ public class TelefoneServiceImpl implements TelefoneService {
     telefone.setId(id);
     telefone = repository.save(telefone);
 
-    TelefoneResponseDTO telefoneResponse = converterTelefoneEmTelefoneResponseDTO(telefone);
+    TelefoneResponseDTO telefoneResponse = criarTelefoneResponseDTO(telefone);
     criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
 
     return new ResponseEntity<>(telefoneResponse, HttpStatus.OK);
