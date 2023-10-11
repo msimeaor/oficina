@@ -100,13 +100,16 @@ public class TelefoneServiceImpl implements TelefoneService {
   }
 
   public ResponseEntity<TelefoneResponseDTO> findById( Long id ) {
-    Telefone telefone = repository.findById(id)
+    Telefone telefone = buscarTelefone(id);
+    TelefoneResponseDTO telefoneResponseDTO = criarTelefoneResponseDTO(telefone);
+    criarLinksHateoasSelfRelEProprietario(telefoneResponseDTO, telefone);
+
+    return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.OK);
+  }
+
+  private Telefone buscarTelefone(Long id) {
+    return repository.findById(id)
             .orElseThrow(() -> new TelefoneNotFoundException("Telefone não encontrado! ID: " + id));
-
-    TelefoneResponseDTO telefoneResponse = criarTelefoneResponseDTO(telefone);
-    criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
-
-    return new ResponseEntity<>(telefoneResponse, HttpStatus.OK);
   }
 
   public ResponseEntity<PagedModel<EntityModel<TelefoneResponseDTO>>> findAll( Pageable pageable ) {
