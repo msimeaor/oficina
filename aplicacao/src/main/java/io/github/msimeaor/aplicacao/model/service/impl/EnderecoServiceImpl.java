@@ -168,27 +168,19 @@ public class EnderecoServiceImpl implements EnderecoService {
   @Transactional
   public ResponseEntity<EnderecoResponseDTO> update( EnderecoRequestDTO enderecoRequest, Long id ) {
     validarLogradouro(enderecoRequest.getLogradouro());
-
-    Endereco endereco = repository.findById(id)
-            .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + id));
-
-    BeanUtils.copyProperties(enderecoRequest, endereco);
-    endereco.setId(id);
-    endereco = repository.save(endereco);
-
-    EnderecoResponseDTO enderecoResponse = DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
-
-    enderecoResponse.add(linkTo(methodOn(EnderecoRestController.class)
-            .findById(id)).withSelfRel());
-
-    if (endereco.getPessoas() != null) {
-      for (Pessoa pessoa : endereco.getPessoas()) {
-        enderecoResponse.add(linkTo(methodOn(PessoaRestController.class)
-                .findById(pessoa.getId())).withRel("Morador(es)"));
-      }
-    }
+    Endereco endereco = buscarEndereco(id);
+    endereco = atualizarEnderecoESalvar(enderecoRequest, endereco.getPessoas(), id);
+    EnderecoResponseDTO enderecoResponse = criarEnderecoResponse(endereco);
+    criarLinksHateoasDeEnderecoResponseDTO(enderecoResponse, endereco.getPessoas());
 
     return new ResponseEntity<>(enderecoResponse, HttpStatus.OK);
+  }
+
+  private Endereco atualizarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas , Long id) {
+    Endereco endereco = DozerMapper.parseObject(enderecoRequestDTO, Endereco.class);
+    endereco.setId(id);
+    endereco.setPessoas(pessoas);
+    return repository.save(endereco);
   }
 
 }
