@@ -90,9 +90,9 @@ public class PessoaServiceImpl {
     if (telefones == null)
       return null;
 
-    return telefones.stream().map(telefone -> {
-      return DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
-    }).collect(Collectors.toList());
+    return telefones.stream().map(telefone ->
+            DozerMapper.parseObject(telefone, TelefoneResponseDTO.class))
+            .collect(Collectors.toList());
   }
 
   private EnderecoResponseDTO converterEnderecoEmEnderecoResponseDTO(Endereco endereco) {
@@ -123,7 +123,7 @@ public class PessoaServiceImpl {
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll( Pageable pageable ) {
     Page<Pessoa> pessoas = criarPagePessoa(pageable);
     Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoas);
-    pessoaResponseDTOS.forEach(pessoaResponse -> criarLinksHateoasDePessoaResponseDTO(pessoaResponse));
+    pessoaResponseDTOS.forEach(this::criarLinksHateoasDePessoaResponseDTO);
     Link link = criarLinkHateoasNavegacaoPorPaginas(pageable);
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
@@ -138,9 +138,7 @@ public class PessoaServiceImpl {
   }
 
   private Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
-    return pessoaPage.map(
-            pessoa -> criarPessoaResponseDTO(pessoa)
-    );
+    return pessoaPage.map(this::criarPessoaResponseDTO);
   }
 
   private Link criarLinkHateoasNavegacaoPorPaginas(Pageable pageable) {
@@ -170,7 +168,7 @@ public class PessoaServiceImpl {
     String formatedNome = "%" + nome + "%";
     Page<Pessoa> pessoaPage = criarPagePessoaComFindByNomeLike(formatedNome, pageable);
     Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoaPage);
-    pessoaResponseDTOS.forEach(pessoaResponse -> criarLinksHateoasDePessoaResponseDTO(pessoaResponse));
+    pessoaResponseDTOS.forEach(this::criarLinksHateoasDePessoaResponseDTO);
     Link link = criarLinkHateoasNavegacaoPorPaginas(pageable);
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);

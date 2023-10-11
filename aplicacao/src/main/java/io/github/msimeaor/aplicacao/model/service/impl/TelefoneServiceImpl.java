@@ -15,7 +15,6 @@ import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.TelefoneRepository;
 import io.github.msimeaor.aplicacao.model.service.TelefoneService;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -118,7 +117,7 @@ public class TelefoneServiceImpl implements TelefoneService {
 
     telefoneResponseDTOS.forEach(telefoneResponse -> {
       for (Telefone telefone : telefonePage) {
-        if (telefoneResponse.getId() == telefone.getId()) {
+        if (telefoneResponse.getId().equals(telefone.getId())) {
           criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
         }
       }

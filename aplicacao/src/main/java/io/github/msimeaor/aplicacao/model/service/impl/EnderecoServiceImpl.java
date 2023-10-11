@@ -15,7 +15,6 @@ import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.service.EnderecoService;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -68,10 +67,9 @@ public class EnderecoServiceImpl implements EnderecoService {
     if (pessoasId == null)
       return null;
 
-    return pessoasId.stream().map((pessoaId) -> {
-      return pessoaRepository.findById(pessoaId)
-              .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + pessoaId));
-    }).collect(Collectors.toList());
+    return pessoasId.stream().map((pessoaId) -> pessoaRepository.findById(pessoaId)
+            .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + pessoaId)))
+            .collect(Collectors.toList());
   }
 
   private Endereco criarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas) {
@@ -150,13 +148,11 @@ public class EnderecoServiceImpl implements EnderecoService {
   private void criarLinksHateoasPageEnderecoResponseDTO(Page<EnderecoResponseDTO> enderecoResponseDTOS,
                                                         Page<Endereco> enderecoPage) {
 
-    enderecoResponseDTOS.forEach(enderecoResponse -> {
-      enderecoPage.forEach(endereco -> {
-        if (enderecoResponse.getId() == endereco.getId()) {
-          criarLinksHateoasDeEnderecoResponseDTO(enderecoResponse, endereco.getPessoas());
-        }
-      });
-    });
+    enderecoResponseDTOS.forEach(enderecoResponse -> enderecoPage.forEach(endereco -> {
+      if (enderecoResponse.getId().equals(endereco.getId())) {
+        criarLinksHateoasDeEnderecoResponseDTO(enderecoResponse, endereco.getPessoas());
+      }
+    }));
   }
 
   private Link criarLinkHateoasNavegacaoEntrePaginas(Pageable pageable) {
