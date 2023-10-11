@@ -113,32 +113,40 @@ public class TelefoneServiceImpl implements TelefoneService {
   }
 
   public ResponseEntity<PagedModel<EntityModel<TelefoneResponseDTO>>> findAll( Pageable pageable ) {
-    Page<Telefone> telefones = repository.findAll(pageable);
-    if (telefones.isEmpty()) {
-      throw new EmptyListException("Não existem telefones cadastrados!");
-    }
+    Page<Telefone> telefonePage = criarPageTelefone(pageable);
+    Page<TelefoneResponseDTO> telefoneResponseDTOS = criarPageTelefoneResponseDTO(telefonePage);
 
-    Page<TelefoneResponseDTO> telefoneResponseDTOS = telefones.map(
-            telefone -> DozerMapper.parseObject(telefone, TelefoneResponseDTO.class)
-    );
-
-    telefoneResponseDTOS.forEach(telefone -> {
-      telefone.add(linkTo(methodOn(TelefoneRestController.class)
-              .findById(telefone.getId())).withSelfRel());
-
-      for (Telefone t : telefones) {
-        if (t.getId() == telefone.getId()) {
-          telefone.add(linkTo(methodOn(PessoaRestController.class)
-                  .findById(t.getPessoa().getId())).withRel("Propietário(a)"));
+    telefoneResponseDTOS.forEach(telefoneResponse -> {
+      for (Telefone telefone : telefonePage) {
+        if (telefoneResponse.getId() == telefone.getId()) {
+          criarLinksHateoasSelfRelEProprietario(telefoneResponse, telefone);
         }
       }
     });
 
-    Link link = linkTo(methodOn(TelefoneRestController.class).findAll(
-            pageable.getPageNumber(), pageable.getPageSize(), "ASC"
-    )).withSelfRel();
+    Link link = criarLinkNavegacaoPorPaginas(pageable);
 
     return new ResponseEntity<>(assembler.toModel(telefoneResponseDTOS, link), HttpStatus.OK);
+  }
+
+  private Page<Telefone> criarPageTelefone(Pageable pageable) {
+    Page<Telefone> telefonePage = repository.findAll(pageable);
+    if (telefonePage.isEmpty())
+      throw new EmptyListException("Não existem telefones cadastrados!");
+
+    return telefonePage;
+  }
+
+  private Page<TelefoneResponseDTO> criarPageTelefoneResponseDTO(Page<Telefone> telefonePage) {
+    return telefonePage.map(
+            telefone -> DozerMapper.parseObject(telefone, TelefoneResponseDTO.class)
+    );
+  }
+
+  private Link criarLinkNavegacaoPorPaginas(Pageable pageable) {
+    return linkTo(methodOn(TelefoneRestController.class).findAll(
+            pageable.getPageNumber(), pageable.getPageSize(), "ASC"
+    )).withSelfRel();
   }
 
   @Transactional
