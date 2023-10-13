@@ -6,6 +6,7 @@ import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.service.impl.PessoaServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -95,6 +96,31 @@ public class PessoaRestController {
   }
 
   @GetMapping
+  @Operation(summary = "Find all people in the database", description = "Find all people in the database",
+    tags = {"Find"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "200",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            array = @ArraySchema(schema = @Schema(implementation = PessoaResponseDTO.class))
+          )
+        }
+      ),
+      @ApiResponse(description = "There are no people in the database", responseCode = "404",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll(
           @RequestParam(name = "page", defaultValue = "0") Integer page,
           @RequestParam(name = "size", defaultValue = "10") Integer size,
