@@ -31,7 +31,7 @@ public class EnderecoRestController {
   }
 
   @PostMapping
-  @Operation(summary = "Save an address in the database", description = "Save an address in the database",
+  @Operation(summary = "Save an address in database", description = "Save an address in database",
     tags = {"Save"},
     responses = {
       @ApiResponse(description = "Success", responseCode = "201",
@@ -42,7 +42,7 @@ public class EnderecoRestController {
           )
         }
       ),
-      @ApiResponse(description = "Resource not found in the database", responseCode = "404",
+      @ApiResponse(description = "Resource not found in database", responseCode = "404",
         content = {
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -61,6 +61,31 @@ public class EnderecoRestController {
   }
 
   @GetMapping("/{id}")
+  @Operation(summary = "Find an address in database by ID", description = "Find an address in database by ID",
+    tags = {"Find"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "200",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = EnderecoResponseDTO.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Address not found in database", responseCode = "404",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   public ResponseEntity<EnderecoResponseDTO> findById( @PathVariable("id") Long id ) {
     return service.findById(id);
   }
