@@ -103,7 +103,7 @@ public class EnderecoRestController {
           )
         }
       ),
-      @ApiResponse(description = "Resource not found in database", responseCode = "404",
+      @ApiResponse(description = "There are no address in database", responseCode = "404",
         content = {
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -130,6 +130,39 @@ public class EnderecoRestController {
   }
 
   @PutMapping("/{id}")
+  @Operation(summary = "Update an address in database", description = "Update an address in database",
+    tags = {"Update"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "200",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = EnderecoResponseDTO.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Street already exists in database", responseCode = "409",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Address not found in database", responseCode = "404",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   public ResponseEntity<EnderecoResponseDTO> update( @RequestBody @Valid EnderecoRequestDTO enderecoRequest,
                                                      @PathVariable("id") Long id ) {
 
