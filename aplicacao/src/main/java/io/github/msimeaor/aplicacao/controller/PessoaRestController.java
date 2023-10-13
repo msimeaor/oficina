@@ -34,7 +34,7 @@ public class PessoaRestController {
   }
 
   @PostMapping
-  @Operation(summary = "Save a person in the database", description = "Save a person in the database",
+  @Operation(summary = "Save a person in database", description = "Save a person in database",
     tags = {"Save"},
     responses = {
       @ApiResponse(description = "Success", responseCode = "201",
@@ -78,7 +78,7 @@ public class PessoaRestController {
           )
         }
       ),
-      @ApiResponse(description = "Person not found in the database", responseCode = "404",
+      @ApiResponse(description = "Person not found in database", responseCode = "404",
         content = {
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -97,7 +97,7 @@ public class PessoaRestController {
   }
 
   @GetMapping
-  @Operation(summary = "Find all people in the database", description = "Find all people in the database",
+  @Operation(summary = "Find all people in database", description = "Find all people in database",
     tags = {"Find"},
     responses = {
       @ApiResponse(description = "Success", responseCode = "200",
@@ -108,7 +108,7 @@ public class PessoaRestController {
           )
         }
       ),
-      @ApiResponse(description = "There are no people in the database", responseCode = "404",
+      @ApiResponse(description = "There are no people in database", responseCode = "404",
         content = {
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -134,7 +134,7 @@ public class PessoaRestController {
   }
 
   @PutMapping("/{id}")
-  @Operation(summary = "Update a person in the database by ID", description = "Update a person in the database by ID",
+  @Operation(summary = "Update a person in database", description = "Update a person in database",
     tags = {"Update"},
     responses = {
       @ApiResponse(description = "Success", responseCode = "200",
@@ -145,7 +145,7 @@ public class PessoaRestController {
           )
         }
       ),
-      @ApiResponse(description = "Resource not found in the database", responseCode = "404",
+      @ApiResponse(description = "Resource not found in database", responseCode = "404",
         content = {
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -165,8 +165,8 @@ public class PessoaRestController {
   }
 
   @GetMapping("/findByNome")
-  @Operation(summary = "Find a person in the database by part of their name",
-    description = "Find a person in the database by part of their name",
+  @Operation(summary = "Find a person in database by part of their name",
+    description = "Find a person in database by part of their name",
     tags = {"Find"},
     responses = {
       @ApiResponse(description = "Success", responseCode = "200",
@@ -177,7 +177,7 @@ public class PessoaRestController {
           )
         }
       ),
-      @ApiResponse(description = "There are no people in the database", responseCode = "404",
+      @ApiResponse(description = "There are no people in database", responseCode = "404",
         content = {
           @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
