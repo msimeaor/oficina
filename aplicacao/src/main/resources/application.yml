@@ -9,3 +9,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+springdoc:
+  paths-to-match: /api/**/**
+  swagger-ui:
+    use-root-path: true
