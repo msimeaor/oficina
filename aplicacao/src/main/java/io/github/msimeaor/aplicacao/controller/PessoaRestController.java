@@ -1,6 +1,7 @@
 package io.github.msimeaor.aplicacao.controller;
 
 import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
+import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.service.impl.PessoaServiceImpl;
@@ -64,6 +65,31 @@ public class PessoaRestController {
   }
 
   @GetMapping("/{id}")
+  @Operation(summary = "Find a person in database by ID", description = "Find a person in database by ID",
+    tags = {"Find"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "200",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = PessoaResponseDTO.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Person not found in the database", responseCode = "404",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   public ResponseEntity<PessoaResponseDTO> findById( @PathVariable("id") Long id ) {
     return service.findById( id );
   }
