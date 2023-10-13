@@ -165,6 +165,32 @@ public class PessoaRestController {
   }
 
   @GetMapping("/findByNome")
+  @Operation(summary = "Find a person in the database by part of their name",
+    description = "Find a person in the database by part of their name",
+    tags = {"Find"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "200",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            array = @ArraySchema(schema = @Schema(implementation = PessoaResponseDTO.class))
+          )
+        }
+      ),
+      @ApiResponse(description = "There are no people in the database", responseCode = "404",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNome(
           @RequestParam(name = "nome", defaultValue = "") String nome,
           @RequestParam(name = "page", defaultValue = "0") Integer page,

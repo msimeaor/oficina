@@ -177,7 +177,7 @@ public class PessoaServiceImpl {
   private Page<Pessoa> criarPagePessoaComFindByNomeLike(String nome, Pageable pageable) {
     Page<Pessoa> pessoaPage = repository.findByNomeLike(nome, pageable);
     if (pessoaPage.isEmpty())
-      throw new PessoaNotFoundException("Não existem clientes cadastrados!");
+      throw new EmptyListException("Não existem clientes cadastrados!");
 
     return pessoaPage;
   }
