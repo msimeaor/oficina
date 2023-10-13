@@ -1,19 +1,27 @@
 package io.github.msimeaor.aplicacao.controller;
 
+import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.service.impl.PessoaServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/pessoas")
+@Tag(name = "Pessoa Rest Controller")
 public class PessoaRestController {
 
   private PessoaServiceImpl service;
@@ -23,6 +31,31 @@ public class PessoaRestController {
   }
 
   @PostMapping
+  @Operation(summary = "Save a person in the database", description = "Save a person in the database",
+    tags = {"Save"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "201",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = PessoaResponseDTO.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Person with personal data already registered", responseCode = "409",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   public ResponseEntity<PessoaResponseDTO> save(
           @RequestBody @Valid PessoaRequestDTO pessoaRequest,
           @RequestParam(name = "placa", required = true) String placa
