@@ -2,6 +2,7 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.enums.Fabricantes;
 import io.github.msimeaor.aplicacao.enums.UFs;
+import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
@@ -90,6 +91,15 @@ class PessoaServiceImplTest {
 
     assertThrows(PessoaConflictException.class, () -> {
       pessoaService.validarCadastroExistente(NOME, PLACA);
+    });
+  }
+
+  @Test
+  public void whenSaveThenReturnEnderecoNotFoundException() {
+    when(enderecoRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+    assertThrows(EnderecoNotFoundException.class, () -> {
+      pessoaService.buscarEndereco(2L);
     });
   }
 

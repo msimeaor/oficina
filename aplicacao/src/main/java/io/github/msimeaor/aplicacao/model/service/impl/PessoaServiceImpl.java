@@ -74,7 +74,7 @@ public class PessoaServiceImpl {
     return repository.save(pessoa);
   }
 
-  private Endereco buscarEndereco(Long enderecoId) {
+  protected Endereco buscarEndereco(Long enderecoId) {
     return enderecoRepository.findById(enderecoId)
             .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + enderecoId));
   }
