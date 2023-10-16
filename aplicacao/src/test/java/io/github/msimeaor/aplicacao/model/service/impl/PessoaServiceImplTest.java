@@ -7,6 +7,7 @@ import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
+import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
@@ -138,6 +139,22 @@ class PessoaServiceImplTest {
   @Test
   void whenConverterListaTelefoneEmListaTelefoneResponseDTOThenReturnNull() {
     var response = pessoaService.converterListaTelefoneEmListaTelefoneResponseDTO(null);
+
+    assertEquals(null, response);
+  }
+
+  @Test
+  void whenConverterEnderecoEmEnderecoResponseDTOThenReturnSuccess() {
+    var response = pessoaService.converterEnderecoEmEnderecoResponseDTO(endereco);
+
+    assertNotNull(response);
+    assertEquals(EnderecoResponseDTO.class, response.getClass());
+    assertEquals(ID, endereco.getId());
+  }
+  
+  @Test
+  void whenConverterEnderecoEmEnderecoResponseDTOThenReturnNull() {
+    var response = pessoaService.converterEnderecoEmEnderecoResponseDTO(null);
 
     assertEquals(null, response);
   }

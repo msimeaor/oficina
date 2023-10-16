@@ -95,7 +95,7 @@ public class PessoaServiceImpl {
             .collect(Collectors.toList());
   }
 
-  private EnderecoResponseDTO converterEnderecoEmEnderecoResponseDTO(Endereco endereco) {
+  protected EnderecoResponseDTO converterEnderecoEmEnderecoResponseDTO(Endereco endereco) {
     if (endereco == null)
       return null;
 
