@@ -141,7 +141,7 @@ public class PessoaServiceImpl {
     return pessoaPage.map(this::criarPessoaResponseDTO);
   }
 
-  private Link criarLinkHateoasNavegacaoPorPaginas(Pageable pageable) {
+  protected Link criarLinkHateoasNavegacaoPorPaginas(Pageable pageable) {
     return linkTo(methodOn(PessoaRestController.class).findAll(
             pageable.getPageNumber(), pageable.getPageSize(), "ASC"
     )).withSelfRel();

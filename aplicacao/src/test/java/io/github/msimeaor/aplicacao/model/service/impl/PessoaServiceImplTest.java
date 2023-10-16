@@ -30,6 +30,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
@@ -229,6 +230,15 @@ class PessoaServiceImplTest {
       assertEquals(PessoaResponseDTO.class, p.getClass());
       assertEquals(ID, p.getId());
     });
+  }
+
+  @Test
+  void whenCriarLinkHateoasNavegacaoPorPaginasThenReturnSuccess() {
+    var response = pessoaService.criarLinkHateoasNavegacaoPorPaginas(pageable);
+
+    assertNotNull(response);
+    assertEquals(Link.class, response.getClass());
+    assertTrue(response.toString().startsWith("</api/pessoas"));
   }
 
   @Test
