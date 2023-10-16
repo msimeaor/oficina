@@ -63,7 +63,7 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.CREATED);
   }
 
-  private void validarCadastroExistente(String nome, String placa) {
+  protected void validarCadastroExistente(String nome, String placa) {
     if (repository.findByNome(nome).isPresent() && veiculoRepository.findByPlaca(placa).isPresent())
       throw new PessoaConflictException("Cliente já cadastrado!");
   }
@@ -74,7 +74,7 @@ public class PessoaServiceImpl {
     return repository.save(pessoa);
   }
 
-  private Endereco buscarEndereco(Long enderecoId) {
+  protected Endereco buscarEndereco(Long enderecoId) {
     return enderecoRepository.findById(enderecoId)
             .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + enderecoId));
   }
@@ -86,7 +86,7 @@ public class PessoaServiceImpl {
     return pessoaResponseDTO;
   }
 
-  private List<TelefoneResponseDTO> converterListaTelefoneEmListaTelefoneResponseDTO(List<Telefone> telefones) {
+  protected List<TelefoneResponseDTO> converterListaTelefoneEmListaTelefoneResponseDTO(List<Telefone> telefones) {
     if (telefones == null)
       return null;
 
@@ -95,7 +95,7 @@ public class PessoaServiceImpl {
             .collect(Collectors.toList());
   }
 
-  private EnderecoResponseDTO converterEnderecoEmEnderecoResponseDTO(Endereco endereco) {
+  protected EnderecoResponseDTO converterEnderecoEmEnderecoResponseDTO(Endereco endereco) {
     if (endereco == null)
       return null;
 
@@ -115,7 +115,7 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.OK);
   }
 
-  private Pessoa buscarPessoa(Long id) {
+  protected Pessoa buscarPessoa(Long id) {
     return repository.findById(id)
             .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
   }
@@ -129,7 +129,7 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }
 
-  private Page<Pessoa> criarPagePessoa(Pageable pageable) {
+  protected Page<Pessoa> criarPagePessoa(Pageable pageable) {
     Page<Pessoa> pessoaPage = repository.findAll(pageable);
     if (pessoaPage.isEmpty())
       throw new EmptyListException("Não existem clientes cadastrados!");
@@ -137,11 +137,11 @@ public class PessoaServiceImpl {
     return pessoaPage;
   }
 
-  private Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
+  protected Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
     return pessoaPage.map(this::criarPessoaResponseDTO);
   }
 
-  private Link criarLinkHateoasNavegacaoPorPaginas(Pageable pageable) {
+  protected Link criarLinkHateoasNavegacaoPorPaginas(Pageable pageable) {
     return linkTo(methodOn(PessoaRestController.class).findAll(
             pageable.getPageNumber(), pageable.getPageSize(), "ASC"
     )).withSelfRel();
@@ -165,8 +165,7 @@ public class PessoaServiceImpl {
   }
 
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNomeLike( String nome, Pageable pageable ) {
-    String formatedNome = "%" + nome + "%";
-    Page<Pessoa> pessoaPage = criarPagePessoaComFindByNomeLike(formatedNome, pageable);
+    Page<Pessoa> pessoaPage = repository.findByNomeLike("%" + nome + "%", pageable);
     Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoaPage);
     pessoaResponseDTOS.forEach(this::criarLinksHateoasDePessoaResponseDTO);
     Link link = criarLinkHateoasNavegacaoPorPaginas(pageable);
@@ -174,7 +173,7 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }
 
-  private Page<Pessoa> criarPagePessoaComFindByNomeLike(String nome, Pageable pageable) {
+  protected Page<Pessoa> criarPagePessoaComFindByNomeLike(String nome, Pageable pageable) {
     Page<Pessoa> pessoaPage = repository.findByNomeLike(nome, pageable);
     if (pessoaPage.isEmpty())
       throw new EmptyListException("Não existem clientes cadastrados!");
