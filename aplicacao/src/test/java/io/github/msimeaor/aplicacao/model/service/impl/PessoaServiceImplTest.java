@@ -8,8 +8,10 @@ import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
+import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
+import io.github.msimeaor.aplicacao.model.entity.Telefone;
 import io.github.msimeaor.aplicacao.model.entity.Veiculo;
 import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
@@ -31,11 +33,11 @@ import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -57,6 +59,7 @@ class PessoaServiceImplTest {
   private Pessoa pessoa;
   private Endereco endereco;
   private Veiculo veiculo;
+  private Telefone telefone;
   private Page<Pessoa> pessoaPage;
   private Pageable pageable;
 
@@ -120,6 +123,23 @@ class PessoaServiceImplTest {
       assertEquals(EnderecoNotFoundException.class, ex.getClass());
       assertEquals("Endereço não encontrado! ID: " + 2L, ex.getMessage());
     }
+  }
+
+  @Test
+  void whenConverterListaTelefoneEmListaTelefoneResponseDTOThenReturnSuccess() {
+    var response = pessoaService.converterListaTelefoneEmListaTelefoneResponseDTO(
+            Collections.singletonList(telefone));
+
+    assertNotNull(response);
+    assertEquals(TelefoneResponseDTO.class, response.get(0).getClass());
+    assertEquals(ID, response.get(0).getId());
+  }
+
+  @Test
+  void whenConverterListaTelefoneEmListaTelefoneResponseDTOThenReturnNull() {
+    var response = pessoaService.converterListaTelefoneEmListaTelefoneResponseDTO(null);
+
+    assertEquals(null, response);
   }
 
   @Test
@@ -210,6 +230,12 @@ class PessoaServiceImplTest {
             .fabricante(Fabricantes.AUDI)
             .placa(PLACA)
             .kmAtual("10.000")
+            .build();
+
+    telefone = Telefone.builder()
+            .id(ID)
+            .numero("61991979110")
+            .pessoa(pessoa)
             .build();
 
     pageable = PageRequest.of(0, 10);

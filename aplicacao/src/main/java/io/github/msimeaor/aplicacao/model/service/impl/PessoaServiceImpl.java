@@ -86,7 +86,7 @@ public class PessoaServiceImpl {
     return pessoaResponseDTO;
   }
 
-  private List<TelefoneResponseDTO> converterListaTelefoneEmListaTelefoneResponseDTO(List<Telefone> telefones) {
+  protected List<TelefoneResponseDTO> converterListaTelefoneEmListaTelefoneResponseDTO(List<Telefone> telefones) {
     if (telefones == null)
       return null;
 
