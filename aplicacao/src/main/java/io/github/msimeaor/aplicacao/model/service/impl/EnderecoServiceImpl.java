@@ -58,12 +58,12 @@ public class EnderecoServiceImpl implements EnderecoService {
     return new ResponseEntity<>(enderecoResponseDTO, HttpStatus.CREATED);
   }
 
-  private void validarLogradouro(String logradouro) {
+  protected void validarLogradouro(String logradouro) {
     if (repository.findByLogradouro(logradouro) != null)
       throw new EnderecoConflictException("Logradouro já cadastrado!");
   }
 
-  private List<Pessoa> criarListaPessoaPorId(List<Long> pessoasId) {
+  protected List<Pessoa> criarListaPessoaPorId(List<Long> pessoasId) {
     if (pessoasId == null)
       return null;
 
@@ -72,13 +72,13 @@ public class EnderecoServiceImpl implements EnderecoService {
             .collect(Collectors.toList());
   }
 
-  private Endereco criarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas) {
+  protected Endereco criarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas) {
     Endereco endereco = DozerMapper.parseObject(enderecoRequestDTO, Endereco.class);
     endereco.setPessoas(pessoas);
     return repository.save(endereco);
   }
 
-  private EnderecoResponseDTO criarEnderecoResponse(Endereco endereco) {
+  protected EnderecoResponseDTO criarEnderecoResponse(Endereco endereco) {
     return DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
   }
 
@@ -87,7 +87,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     criarLinkHateoasSelfRel(enderecoResponseDTO);
   }
 
-  private void criarLinkHateoasMoradores(EnderecoResponseDTO enderecoResponseDTO, List<Pessoa> pessoas) {
+  protected void criarLinkHateoasMoradores(EnderecoResponseDTO enderecoResponseDTO, List<Pessoa> pessoas) {
     if (pessoas != null) {
       pessoas.forEach(
               pessoa -> enderecoResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
@@ -101,7 +101,7 @@ public class EnderecoServiceImpl implements EnderecoService {
             .findById(enderecoResponseDTO.getId())).withSelfRel());
   }
 
-  private void atualizarPessoaRelacionandoEndereco(List<Pessoa> pessoas, Endereco endereco) {
+  protected void atualizarPessoaRelacionandoEndereco(List<Pessoa> pessoas, Endereco endereco) {
     if (pessoas != null) {
       pessoas.forEach(
               pessoa -> pessoa.setEndereco(endereco)
