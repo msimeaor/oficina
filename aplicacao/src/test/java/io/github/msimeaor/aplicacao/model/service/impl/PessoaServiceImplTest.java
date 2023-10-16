@@ -82,6 +82,8 @@ class PessoaServiceImplTest {
     assertEquals(ID ,response.getBody().getId());
     assertEquals(SEXO, response.getBody().getSexo());
     assertEquals(NOME, response.getBody().getNome());
+
+    assertEquals("</api/pessoas/1>;rel=\"self\"", response.getBody().getLinks().toString());
   }
 
   @Test
