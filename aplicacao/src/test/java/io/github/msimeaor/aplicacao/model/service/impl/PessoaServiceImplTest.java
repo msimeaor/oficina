@@ -149,17 +149,16 @@ class PessoaServiceImplTest {
     }
   }
 
-  // TODO completar por ultimo
+  // TODO completar depois
   @Test
-  void whenFindAllThenReturnSuccess() {
-  }
+  void whenFindAllThenReturnSuccess() {}
 
   @Test
-  void whenFindAllThenReturnEmptyListException() {
+  void whenCriarPagePessoaThenReturnEmptyListException() {
     when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
     try {
-      var response = pessoaService.findAll(pageable);
+      var response = pessoaService.criarPagePessoa(pageable);
 
     } catch (Exception ex) {
       assertEquals(EmptyListException.class, ex.getClass());
@@ -182,9 +181,9 @@ class PessoaServiceImplTest {
     assertEquals("Nome updated", response.getBody().getNome());
   }
 
+  // TODO completar depois
   @Test
-  void findByNomeLike() {
-  }
+  void whenFindByNomeLikeThenReturnSuccess() {}
 
   public void startAttributtes() {
     pessoaRequestDTO = PessoaRequestDTO.builder()

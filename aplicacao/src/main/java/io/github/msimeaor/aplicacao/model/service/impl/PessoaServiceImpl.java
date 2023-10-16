@@ -165,8 +165,7 @@ public class PessoaServiceImpl {
   }
 
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNomeLike( String nome, Pageable pageable ) {
-    String formatedNome = "%" + nome + "%";
-    Page<Pessoa> pessoaPage = criarPagePessoaComFindByNomeLike(formatedNome, pageable);
+    Page<Pessoa> pessoaPage = repository.findByNomeLike("%" + nome + "%", pageable);
     Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoaPage);
     pessoaResponseDTOS.forEach(this::criarLinksHateoasDePessoaResponseDTO);
     Link link = criarLinkHateoasNavegacaoPorPaginas(pageable);
