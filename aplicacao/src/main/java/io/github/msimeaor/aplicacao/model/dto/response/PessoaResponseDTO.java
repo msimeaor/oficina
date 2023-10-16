@@ -20,6 +20,7 @@ public class PessoaResponseDTO extends RepresentationModel<PessoaResponseDTO> {
   private String cpf;
   private LocalDate dataNascimento;
   private String email;
+  private String sexo;
   private EnderecoResponseDTO enderecoResponse;
   private List<TelefoneResponseDTO> telefonesResponse;
   private boolean inativo;
