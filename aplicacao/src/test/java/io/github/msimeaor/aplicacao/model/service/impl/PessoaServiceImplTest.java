@@ -22,18 +22,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static io.restassured.RestAssured.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -94,7 +96,7 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void whenSaveThenThrowsPessoaConflictException() {
+  void whenValidarCadastroExistenteThenReturnPessoaConflictException() {
     when(repository.findByNome(anyString())).thenReturn(Optional.of(pessoa));
     when(veiculoRepository.findByPlaca(anyString())).thenReturn(Optional.of(veiculo));
 
@@ -108,7 +110,7 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void whenSaveThenReturnEnderecoNotFoundException() {
+  void whenBuscarEnderecoThenReturnEnderecoNotFoundException() {
     when(enderecoRepository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
@@ -135,7 +137,7 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void whenFindByIdThenReturnPessoaNotFoundException() {
+  void whenBuscarPessoaTheReturnPessoaNotFoundException() {
     when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
@@ -150,11 +152,10 @@ class PessoaServiceImplTest {
   // TODO completar por ultimo
   @Test
   void whenFindAllThenReturnSuccess() {
-
   }
 
   @Test
-  void whenFindAllThenThrowEmptyListException() {
+  void whenFindAllThenReturnEmptyListException() {
     when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
     try {
@@ -167,7 +168,18 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void update() {
+  void whenUpdateThenReturnSuccess() {
+    when(repository.findById(anyLong())).thenReturn(Optional.of(pessoa));
+    when(enderecoRepository.findById(anyLong())).thenReturn(Optional.of(endereco));
+    pessoa.setNome("Nome updated");
+    when(repository.save(any(Pessoa.class))).thenReturn(pessoa);
+
+    var response = pessoaService.update(pessoaRequestDTO, ID);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(ID, response.getBody().getId());
+    assertEquals("Nome updated", response.getBody().getNome());
   }
 
   @Test
