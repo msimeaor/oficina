@@ -137,7 +137,7 @@ public class PessoaServiceImpl {
     return pessoaPage;
   }
 
-  private Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
+  protected Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
     return pessoaPage.map(this::criarPessoaResponseDTO);
   }
 

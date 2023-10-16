@@ -198,10 +198,10 @@ class PessoaServiceImplTest {
 
     assertNotNull(response);
     assertEquals(PageImpl.class, response.getClass());
-    response.forEach(pessoaPage -> {
-      assertNotNull(pessoaPage);
-      assertEquals(Pessoa.class, pessoaPage.getClass());
-      assertEquals(ID, pessoaPage.getId());
+    response.forEach(p -> {
+      assertNotNull(p);
+      assertEquals(Pessoa.class, p.getClass());
+      assertEquals(ID, p.getId());
     });
   }
 
@@ -216,6 +216,19 @@ class PessoaServiceImplTest {
       assertEquals(EmptyListException.class, ex.getClass());
       assertEquals("Não existem clientes cadastrados!", ex.getMessage());
     }
+  }
+
+  @Test
+  void whenConverterPagePessoaEmPagePessoaResponseDTOThenReturnSuccess() {
+    var response = pessoaService.converterPagePessoaEmPagePessoaResponseDTO(pessoaPage);
+
+    assertNotNull(response);
+    assertEquals(PageImpl.class, response.getClass());
+    response.forEach(p -> {
+      assertNotNull(p);
+      assertEquals(PessoaResponseDTO.class, p.getClass());
+      assertEquals(ID, p.getId());
+    });
   }
 
   @Test
