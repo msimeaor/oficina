@@ -260,6 +260,39 @@ class PessoaServiceImplTest {
   @Test
   void whenFindByNomeLikeThenReturnSuccess() {}
 
+  @Test
+  void whenCriarPagePessoaComFindByNomeLikeThenReturnSuccess() {
+    when(repository.findByNomeLike(anyString(), any(Pageable.class)))
+            .thenReturn(pessoaPage);
+
+    var response = pessoaService.criarPagePessoaComFindByNomeLike("%" + NOME + "%", pageable);
+
+    assertNotNull(response);
+    assertEquals(PageImpl.class, response.getClass());
+    response.forEach(p -> {
+      assertNotNull(p);
+      assertEquals(Pessoa.class, p.getClass());
+      assertEquals(ID, p.getId());
+      assertTrue(p.getNome().contains(NOME));
+    });
+  }
+
+  @Test
+  void whenCriarPagePessoaComFindByNomeLikeThenReturnEmptyListException() {
+    when(repository.findByNomeLike(anyString(), any(Pageable.class)))
+            .thenReturn(Page.empty());
+
+    try {
+      var response = pessoaService.criarPagePessoaComFindByNomeLike("%" + NOME + "%", pageable);
+
+    } catch (Exception ex) {
+      assertNotNull(ex);
+      assertEquals(EmptyListException.class, ex.getClass());
+      assertEquals("Não existem clientes cadastrados!", ex.getMessage());
+    }
+
+  }
+
   public void startAttributtes() {
     pessoaRequestDTO = PessoaRequestDTO.builder()
             .nome(NOME)
