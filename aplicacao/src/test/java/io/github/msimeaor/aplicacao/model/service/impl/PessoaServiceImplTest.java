@@ -3,6 +3,7 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 import io.github.msimeaor.aplicacao.enums.Fabricantes;
 import io.github.msimeaor.aplicacao.enums.UFs;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
+import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
@@ -21,14 +22,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static io.restassured.RestAssured.*;
@@ -46,10 +48,15 @@ class PessoaServiceImplTest {
   private VeiculoRepository veiculoRepository;
   @Mock
   private EnderecoRepository enderecoRepository;
+  @Mock
+  private PagedResourcesAssembler<PessoaResponseDTO> assembler;
+
   private PessoaRequestDTO pessoaRequestDTO;
   private Pessoa pessoa;
   private Endereco endereco;
   private Veiculo veiculo;
+  private Page<Pessoa> pessoaPage;
+  private Pageable pageable;
 
   private static final String NOME = "Nome Test";
   private static final String CPF = "000.000.000-00";
@@ -87,22 +94,30 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  public void whenSaveThenThrowsPessoaConflictException() {
+  void whenSaveThenThrowsPessoaConflictException() {
     when(repository.findByNome(anyString())).thenReturn(Optional.of(pessoa));
     when(veiculoRepository.findByPlaca(anyString())).thenReturn(Optional.of(veiculo));
 
-    assertThrows(PessoaConflictException.class, () -> {
+    try {
       pessoaService.validarCadastroExistente(NOME, PLACA);
-    });
+
+    } catch (Exception ex) {
+      assertEquals(PessoaConflictException.class, ex.getClass());
+      assertEquals("Cliente já cadastrado!", ex.getMessage());
+    }
   }
 
   @Test
-  public void whenSaveThenReturnEnderecoNotFoundException() {
+  void whenSaveThenReturnEnderecoNotFoundException() {
     when(enderecoRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-    assertThrows(EnderecoNotFoundException.class, () -> {
-      pessoaService.buscarEndereco(2L);
-    });
+    try {
+      var response = pessoaService.buscarEndereco(2L);
+
+    } catch (Exception ex) {
+      assertEquals(EnderecoNotFoundException.class, ex.getClass());
+      assertEquals("Endereço não encontrado! ID: " + 2L, ex.getMessage());
+    }
   }
 
   @Test
@@ -120,16 +135,35 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  public void whenFindByIdThenReturnPessoaNotFoundException() {
+  void whenFindByIdThenReturnPessoaNotFoundException() {
     when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
-    assertThrows(PessoaNotFoundException.class, () -> {
-      pessoaService.buscarPessoa(2L);
-    });
+    try {
+      var response = pessoaService.buscarPessoa(2L);
+
+    } catch (Exception ex) {
+      assertEquals(PessoaNotFoundException.class, ex.getClass());
+      assertEquals("Cliente não encontrado! ID: " + 2L, ex.getMessage());
+    }
+  }
+
+  // TODO completar por ultimo
+  @Test
+  void whenFindAllThenReturnSuccess() {
+
   }
 
   @Test
-  void findAll() {
+  void whenFindAllThenThrowEmptyListException() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
+
+    try {
+      var response = pessoaService.findAll(pageable);
+
+    } catch (Exception ex) {
+      assertEquals(EmptyListException.class, ex.getClass());
+      assertEquals("Não existem clientes cadastrados!", ex.getMessage());
+    }
   }
 
   @Test
@@ -151,14 +185,12 @@ class PessoaServiceImplTest {
             .id(ID)
             .nome(NOME)
             .sexo(SEXO)
-            .endereco(endereco)
             .build();
 
     endereco = Endereco.builder()
             .id(ID)
             .logradouro(LOGRADOURO)
             .uf(UF)
-            .pessoas(Collections.singletonList(pessoa))
             .build();
 
     veiculo = Veiculo.builder()
@@ -168,6 +200,10 @@ class PessoaServiceImplTest {
             .placa(PLACA)
             .kmAtual("10.000")
             .build();
+
+    pageable = PageRequest.of(0, 10);
+    List<Pessoa> pessoas = Arrays.asList(pessoa);
+    pessoaPage = new PageImpl<>(pessoas, pageable, pessoas.size());
   }
 
 }

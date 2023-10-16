@@ -129,7 +129,7 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }
 
-  private Page<Pessoa> criarPagePessoa(Pageable pageable) {
+  protected Page<Pessoa> criarPagePessoa(Pageable pageable) {
     Page<Pessoa> pessoaPage = repository.findAll(pageable);
     if (pessoaPage.isEmpty())
       throw new EmptyListException("Não existem clientes cadastrados!");
