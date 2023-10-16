@@ -63,7 +63,7 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.CREATED);
   }
 
-  private void validarCadastroExistente(String nome, String placa) {
+  protected void validarCadastroExistente(String nome, String placa) {
     if (repository.findByNome(nome).isPresent() && veiculoRepository.findByPlaca(placa).isPresent())
       throw new PessoaConflictException("Cliente já cadastrado!");
   }

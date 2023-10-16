@@ -2,6 +2,8 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.enums.Fabricantes;
 import io.github.msimeaor.aplicacao.enums.UFs;
+import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
+import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
@@ -46,6 +48,7 @@ class PessoaServiceImplTest {
   private PessoaRequestDTO pessoaRequestDTO;
   private Pessoa pessoa;
   private Endereco endereco;
+  private Veiculo veiculo;
 
   private static final String NOME = "Nome Test";
   private static final String CPF = "000.000.000-00";
@@ -53,7 +56,7 @@ class PessoaServiceImplTest {
   private static final String SEXO = "MASCULINO";
   private static final LocalDate DATA_NASCIMENTO = LocalDate.of(2000, 01, 01);
   private static final Long ID = 1L;
-  private static final String PLACA = "JJJAAAA";
+  private static final String PLACA = "JJJ1111";
   private static final String LOGRADOURO = "Logradouro Test";
   private static final UFs UF = UFs.DF;
 
@@ -78,6 +81,16 @@ class PessoaServiceImplTest {
     assertEquals(ID ,response.getBody().getId());
     assertEquals(SEXO, response.getBody().getSexo());
     assertEquals(NOME, response.getBody().getNome());
+  }
+
+  @Test
+  public void whenSaveThenThrowsPessoaConflictException() {
+    when(repository.findByNome(anyString())).thenReturn(Optional.of(pessoa));
+    when(veiculoRepository.findByPlaca(anyString())).thenReturn(Optional.of(veiculo));
+
+    assertThrows(PessoaConflictException.class, () -> {
+      pessoaService.validarCadastroExistente(NOME, PLACA);
+    });
   }
 
   @Test
@@ -115,6 +128,14 @@ class PessoaServiceImplTest {
             .logradouro(LOGRADOURO)
             .uf(UF)
             .pessoas(Collections.singletonList(pessoa))
+            .build();
+
+    veiculo = Veiculo.builder()
+            .id(ID)
+            .nome("Veiculo Test")
+            .fabricante(Fabricantes.AUDI)
+            .placa(PLACA)
+            .kmAtual("10.000")
             .build();
   }
 
