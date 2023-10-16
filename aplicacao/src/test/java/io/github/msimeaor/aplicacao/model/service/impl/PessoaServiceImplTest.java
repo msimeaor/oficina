@@ -106,7 +106,26 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void findById() {
+  void whenFindByIdThenReturnSuccess() {
+    when(repository.findById(anyLong())).thenReturn(Optional.of(pessoa));
+
+    var response = pessoaService.findById(ID);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(response.getBody().getClass(), PessoaResponseDTO.class);
+
+    assertEquals(ID ,response.getBody().getId());
+    assertEquals("</api/pessoas/1>;rel=\"self\"", response.getBody().getLinks().toString());
+  }
+
+  @Test
+  public void whenFindByIdThenReturnPessoaNotFoundException() {
+    when(repository.findById(anyLong())).thenReturn(Optional.empty());
+
+    assertThrows(PessoaNotFoundException.class, () -> {
+      pessoaService.buscarPessoa(2L);
+    });
   }
 
   @Test

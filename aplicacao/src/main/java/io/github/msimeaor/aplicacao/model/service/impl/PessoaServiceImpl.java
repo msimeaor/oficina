@@ -115,7 +115,7 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.OK);
   }
 
-  private Pessoa buscarPessoa(Long id) {
+  protected Pessoa buscarPessoa(Long id) {
     return repository.findById(id)
             .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
   }
