@@ -151,7 +151,7 @@ class PessoaServiceImplTest {
     assertEquals(EnderecoResponseDTO.class, response.getClass());
     assertEquals(ID, endereco.getId());
   }
-  
+
   @Test
   void whenConverterEnderecoEmEnderecoResponseDTOThenReturnNull() {
     var response = pessoaService.converterEnderecoEmEnderecoResponseDTO(null);
@@ -189,6 +189,21 @@ class PessoaServiceImplTest {
   // TODO completar depois
   @Test
   void whenFindAllThenReturnSuccess() {}
+
+  @Test
+  void whenCriarPagePessoaThenReturnSuccess() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(pessoaPage);
+
+    var response = pessoaService.criarPagePessoa(pageable);
+
+    assertNotNull(response);
+    assertEquals(PageImpl.class, response.getClass());
+    response.forEach(pessoaPage -> {
+      assertNotNull(pessoaPage);
+      assertEquals(Pessoa.class, pessoaPage.getClass());
+      assertEquals(ID, pessoaPage.getId());
+    });
+  }
 
   @Test
   void whenCriarPagePessoaThenReturnEmptyListException() {
