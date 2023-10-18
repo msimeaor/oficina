@@ -1,10 +1,12 @@
 package io.github.msimeaor.aplicacao.model.service.impl;
 
+import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.TelefoneRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
+import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.entity.Telefone;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
@@ -17,6 +19,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 
 import java.util.*;
@@ -39,6 +46,8 @@ class TelefoneServiceImplTest {
   private Telefone telefone;
   private TelefoneRequestDTO telefoneRequestDTO;
   private TelefoneResponseDTO telefoneResponseDTO;
+  private Pageable pageable;
+  private Page<Telefone> telefonePage;
 
   private static final Long ID = 1L;
   private static final String NUMERO = "00000000000";
@@ -220,7 +229,58 @@ class TelefoneServiceImplTest {
   }
 
   @Test
-  void findAll() {
+  void whenFindAllThenReturnSuccess() {
+  }
+
+  @Test
+  void whenCriarPageTelefoneThenReturnSuccess() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(telefonePage);
+
+    var response = telefoneService.criarPageTelefone(pageable);
+
+    assertNotNull(response);
+    assertEquals(PageImpl.class, response.getClass());
+    response.forEach(t -> {
+      assertNotNull(t);
+      assertEquals(Telefone.class, t.getClass());
+      assertEquals(ID, t.getId());
+    });
+  }
+
+  @Test
+  void whenCriarPageTelefoneThenReturnEmptyListException() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
+
+    try {
+      var response = telefoneService.criarPageTelefone(pageable);
+
+    } catch (Exception ex) {
+      assertNotNull(ex);
+      assertEquals(EmptyListException.class, ex.getClass());
+      assertEquals("Não existem telefones cadastrados!", ex.getMessage());
+    }
+  }
+
+  @Test
+  void whenCriarPageTelefoneResponseDTOThenReturnSuccess() {
+    var response = telefoneService.criarPageTelefoneResponseDTO(telefonePage);
+
+    assertNotNull(response);
+    assertEquals(PageImpl.class, response.getClass());
+    response.forEach(t -> {
+      assertNotNull(t);
+      assertEquals(TelefoneResponseDTO.class, t.getClass());
+      assertEquals(ID, t.getId());
+    });
+  }
+
+  @Test
+  void whenCriarLinkNavegacaoPorPaginasThenReturnSuccess() {
+    var response = telefoneService.criarLinkNavegacaoPorPaginas(pageable);
+
+    assertNotNull(response);
+    assertEquals(Link.class, response.getClass());
+    assertTrue(response.toString().startsWith("</api/telefones?"));
   }
 
   @Test
@@ -249,6 +309,10 @@ class TelefoneServiceImplTest {
             .id(ID)
             .numero(NUMERO)
             .build();
+
+    pageable = PageRequest.of(0, 10);
+    List<Telefone> telefones = Arrays.asList(telefone);
+    telefonePage = new PageImpl<>(telefones, pageable, telefones.size());
   }
 
 }
