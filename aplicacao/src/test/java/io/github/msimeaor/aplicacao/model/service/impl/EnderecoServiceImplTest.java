@@ -294,7 +294,39 @@ class EnderecoServiceImplTest {
   }
 
   @Test
-  void update() {
+  void whenUpdateThenReturnSuccess() {
+    when(repository.findByLogradouro(anyString())).thenReturn(null);
+    when(repository.findById(anyLong())).thenReturn(Optional.of(endereco));
+    endereco.setLogradouro("Logradouro Updated");
+    when(repository.save(any(Endereco.class))).thenReturn(endereco);
+
+    var response = enderecoService.update(enderecoRequestDTO, ID);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(response.getBody().getClass(), EnderecoResponseDTO.class);
+
+    assertEquals(ID ,response.getBody().getId());
+    // Não estamos testando os links Hateoas de moradores
+    assertEquals("</api/enderecos/1>;rel=\"self\"", response.getBody().getLinks().toString());
+  }
+
+  @Test
+  void whenAtualizarEnderecoESalvarThenReturnSuccess() {
+    when(repository.save(any(Endereco.class))).thenReturn(endereco);
+
+    var response = enderecoService.atualizarEnderecoESalvar(enderecoRequestDTO,
+            Collections.singletonList(pessoa),
+            ID);
+
+    // Simulando a linha do método que adiciona a lista de pessoa do parâmetro no endereco
+    response.setPessoas(Collections.singletonList(pessoa));
+
+    assertNotNull(response);
+    assertEquals(Endereco.class, response.getClass());
+    assertEquals(ID, response.getId());
+    assertNotNull(response.getPessoas());
+    assertEquals(ID, response.getPessoas().get(0).getId());
   }
 
   private void startAttributes() {

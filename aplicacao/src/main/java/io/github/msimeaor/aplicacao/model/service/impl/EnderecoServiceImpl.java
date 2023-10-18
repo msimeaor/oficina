@@ -172,7 +172,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     return new ResponseEntity<>(enderecoResponse, HttpStatus.OK);
   }
 
-  private Endereco atualizarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas , Long id) {
+  protected Endereco atualizarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas , Long id) {
     Endereco endereco = DozerMapper.parseObject(enderecoRequestDTO, Endereco.class);
     endereco.setId(id);
     endereco.setPessoas(pessoas);
