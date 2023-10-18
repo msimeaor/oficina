@@ -75,7 +75,7 @@ class EnderecoServiceImplTest {
 
     assertNotNull(response);
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
-    assertEquals(response.getBody().getClass(), EnderecoResponseDTO.class);
+    assertEquals(EnderecoResponseDTO.class, response.getBody().getClass());
 
     assertEquals(ID ,response.getBody().getId());
     assertEquals(LOGRADOURO, response.getBody().getLogradouro());
