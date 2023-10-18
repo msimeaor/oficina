@@ -2,6 +2,7 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictException;
+import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.TelefoneRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
@@ -178,7 +179,44 @@ class TelefoneServiceImplTest {
   }
 
   @Test
-  void findById() {
+  void whenFindByIdThenReturnSuccess() {
+    when(repository.findById(anyLong())).thenReturn(Optional.of(telefone));
+
+    var response = telefoneService.findById(ID);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(TelefoneResponseDTO.class, response.getBody().getClass());
+
+    assertEquals(ID ,response.getBody().getId());
+    // taking into account that the returned phone has this person on your person list
+    assertEquals("</api/telefones/1>;rel=\"self\",</api/pessoas/1>;rel=\"Proprietário\"",
+            response.getBody().getLinks().toString());
+  }
+
+  @Test
+  void whenBuscarTelefoneThenReturnSuccess() {
+    when(repository.findById(anyLong())).thenReturn(Optional.of(telefone));
+
+    var response = telefoneService.buscarTelefone(ID);
+
+    assertNotNull(response);
+    assertEquals(Telefone.class, response.getClass());
+    assertEquals(ID, response.getId());
+  }
+
+  @Test
+  void whenBuscarTelefoneThenReturnTelefoneNotFoundException() {
+    when(repository.findById(anyLong())).thenReturn(Optional.empty());
+
+    try {
+      var response = telefoneService.buscarTelefone(2L);
+
+    } catch (Exception ex) {
+      assertNotNull(ex);
+      assertEquals(TelefoneNotFoundException.class, ex.getClass());
+      assertEquals("Telefone não encontrado! ID: " + 2L, ex.getMessage());
+    }
   }
 
   @Test
