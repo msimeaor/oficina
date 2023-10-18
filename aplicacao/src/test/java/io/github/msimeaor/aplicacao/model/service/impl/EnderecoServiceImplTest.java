@@ -3,10 +3,12 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 import io.github.msimeaor.aplicacao.enums.UFs;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
+import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.EnderecoRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
+import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
@@ -19,14 +21,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 
 import java.net.http.WebSocketHandshakeException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -48,6 +52,9 @@ class EnderecoServiceImplTest {
   private EnderecoRequestDTO enderecoRequestDTO;
   private Pessoa pessoa;
   private EnderecoResponseDTO enderecoResponseDTO;
+  private Pageable pageable;
+  private Page<Endereco> enderecoPage;
+  private Page<EnderecoResponseDTO> enderecoResponseDTOPage;
 
   private static final Long ID = 1L;
   private static final String LOGRADOURO = "Logradouro Test";
@@ -221,6 +228,72 @@ class EnderecoServiceImplTest {
   }
 
   @Test
+  void whenCriarPageEnderecoThenReturnSuccess() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(enderecoPage);
+
+    var response = enderecoService.criarPageEndereco(pageable);
+
+    assertNotNull(response);
+    assertEquals(PageImpl.class, response.getClass());
+    response.forEach(e -> {
+      assertNotNull(e);
+      assertEquals(Endereco.class, e.getClass());
+      assertEquals(ID, e.getId());
+    });
+  }
+
+  @Test
+  void whenCriarPageEnderecoThenReturnEmptyListException() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
+
+    try {
+      var response = enderecoService.criarPageEndereco(pageable);
+
+    } catch (Exception ex) {
+      assertNotNull(ex);
+      assertEquals(EmptyListException.class, ex.getClass());
+      assertEquals("Não existem endereços cadastrados!", ex.getMessage());
+    }
+  }
+
+  @Test
+  void whenConverterPageEnderecoEmPageEnderecoResponseDTOThenReturnSuccess() {
+    var response = enderecoService.converterPageEnderecoEmPageEnderecoResponseDTO(enderecoPage);
+
+    assertNotNull(response);
+    assertEquals(PageImpl.class, response.getClass());
+    response.forEach(e -> {
+      assertNotNull(e);
+      assertEquals(EnderecoResponseDTO.class, e.getClass());
+      assertEquals(ID, e.getId());
+    });
+  }
+
+  @Test
+  void whenCriarLinksHateoasPageEnderecoResponseDTOThenReturnSuccess() {
+    enderecoService.criarLinksHateoasPageEnderecoResponseDTO(enderecoResponseDTOPage, enderecoPage);
+
+    /* A chamada do método pega todos os EnderecoResponseDTO passados nesse page e adiciona o link Hateoas Selfrel
+       para cada um deles.
+       O teste não está validando a criação dos links Hateoas de moradores
+     */
+
+    enderecoResponseDTOPage.forEach(e -> {
+      assertNotNull(e);
+      assertEquals("</api/enderecos/1>;rel=\"self\"", e.getLinks().toString());
+    });
+  }
+
+  @Test
+  void whenCriarLinkHateoasNavegacaoEntrePaginasThenReturnSuccess() {
+    var response = enderecoService.criarLinkHateoasNavegacaoEntrePaginas(pageable);
+
+    assertNotNull(response);
+    assertEquals(Link.class, response.getClass());
+    assertTrue(response.toString().startsWith("</api/enderecos"));
+  }
+
+  @Test
   void update() {
   }
 
@@ -247,6 +320,13 @@ class EnderecoServiceImplTest {
             .logradouro(LOGRADOURO)
             .uf(UF)
             .build();
+
+    pageable = PageRequest.of(0, 10);
+    List<Endereco> enderecos = Arrays.asList(endereco);
+    enderecoPage = new PageImpl<>(enderecos, pageable, enderecos.size());
+
+    List<EnderecoResponseDTO> enderecoResponseDTOS = Arrays.asList(enderecoResponseDTO);
+    enderecoResponseDTOPage = new PageImpl<>(enderecoResponseDTOS, pageable, enderecoResponseDTOS.size());
   }
 
 }

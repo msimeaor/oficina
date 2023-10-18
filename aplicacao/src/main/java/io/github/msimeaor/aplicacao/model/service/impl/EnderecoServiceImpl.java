@@ -131,7 +131,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     return new ResponseEntity<>(assembler.toModel(enderecoResponseDTOS, link), HttpStatus.OK);
   }
 
-  private Page<Endereco> criarPageEndereco(Pageable pageable) {
+  protected Page<Endereco> criarPageEndereco(Pageable pageable) {
     Page<Endereco> enderecoPage = repository.findAll(pageable);
     if (enderecoPage.isEmpty())
       throw new EmptyListException("Não existem endereços cadastrados!");
@@ -139,13 +139,13 @@ public class EnderecoServiceImpl implements EnderecoService {
     return enderecoPage;
   }
 
-  private Page<EnderecoResponseDTO> converterPageEnderecoEmPageEnderecoResponseDTO(Page<Endereco> enderecoPage) {
+  protected Page<EnderecoResponseDTO> converterPageEnderecoEmPageEnderecoResponseDTO(Page<Endereco> enderecoPage) {
     return enderecoPage.map(
             endereco -> DozerMapper.parseObject(endereco, EnderecoResponseDTO.class)
     );
   }
 
-  private void criarLinksHateoasPageEnderecoResponseDTO(Page<EnderecoResponseDTO> enderecoResponseDTOS,
+  protected void criarLinksHateoasPageEnderecoResponseDTO(Page<EnderecoResponseDTO> enderecoResponseDTOS,
                                                         Page<Endereco> enderecoPage) {
 
     enderecoResponseDTOS.forEach(enderecoResponse -> enderecoPage.forEach(endereco -> {
@@ -155,7 +155,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     }));
   }
 
-  private Link criarLinkHateoasNavegacaoEntrePaginas(Pageable pageable) {
+  protected Link criarLinkHateoasNavegacaoEntrePaginas(Pageable pageable) {
     return linkTo(methodOn(EnderecoRestController.class).findAll(
             pageable.getPageNumber(), pageable.getPageSize(), "ASC"
     )).withSelfRel();
