@@ -58,12 +58,12 @@ public class EnderecoServiceImpl implements EnderecoService {
     return new ResponseEntity<>(enderecoResponseDTO, HttpStatus.CREATED);
   }
 
-  private void validarLogradouro(String logradouro) {
+  protected void validarLogradouro(String logradouro) {
     if (repository.findByLogradouro(logradouro) != null)
       throw new EnderecoConflictException("Logradouro já cadastrado!");
   }
 
-  private List<Pessoa> criarListaPessoaPorId(List<Long> pessoasId) {
+  protected List<Pessoa> criarListaPessoaPorId(List<Long> pessoasId) {
     if (pessoasId == null)
       return null;
 
@@ -72,13 +72,13 @@ public class EnderecoServiceImpl implements EnderecoService {
             .collect(Collectors.toList());
   }
 
-  private Endereco criarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas) {
+  protected Endereco criarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas) {
     Endereco endereco = DozerMapper.parseObject(enderecoRequestDTO, Endereco.class);
     endereco.setPessoas(pessoas);
     return repository.save(endereco);
   }
 
-  private EnderecoResponseDTO criarEnderecoResponse(Endereco endereco) {
+  protected EnderecoResponseDTO criarEnderecoResponse(Endereco endereco) {
     return DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
   }
 
@@ -87,7 +87,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     criarLinkHateoasSelfRel(enderecoResponseDTO);
   }
 
-  private void criarLinkHateoasMoradores(EnderecoResponseDTO enderecoResponseDTO, List<Pessoa> pessoas) {
+  protected void criarLinkHateoasMoradores(EnderecoResponseDTO enderecoResponseDTO, List<Pessoa> pessoas) {
     if (pessoas != null) {
       pessoas.forEach(
               pessoa -> enderecoResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
@@ -101,7 +101,7 @@ public class EnderecoServiceImpl implements EnderecoService {
             .findById(enderecoResponseDTO.getId())).withSelfRel());
   }
 
-  private void atualizarPessoaRelacionandoEndereco(List<Pessoa> pessoas, Endereco endereco) {
+  protected void atualizarPessoaRelacionandoEndereco(List<Pessoa> pessoas, Endereco endereco) {
     if (pessoas != null) {
       pessoas.forEach(
               pessoa -> pessoa.setEndereco(endereco)
@@ -117,7 +117,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     return new ResponseEntity<>(enderecoResponseDTO, HttpStatus.OK);
   }
 
-  private Endereco buscarEndereco(Long id) {
+  protected Endereco buscarEndereco(Long id) {
     return repository.findById(id)
             .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + id));
   }
@@ -131,7 +131,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     return new ResponseEntity<>(assembler.toModel(enderecoResponseDTOS, link), HttpStatus.OK);
   }
 
-  private Page<Endereco> criarPageEndereco(Pageable pageable) {
+  protected Page<Endereco> criarPageEndereco(Pageable pageable) {
     Page<Endereco> enderecoPage = repository.findAll(pageable);
     if (enderecoPage.isEmpty())
       throw new EmptyListException("Não existem endereços cadastrados!");
@@ -139,13 +139,13 @@ public class EnderecoServiceImpl implements EnderecoService {
     return enderecoPage;
   }
 
-  private Page<EnderecoResponseDTO> converterPageEnderecoEmPageEnderecoResponseDTO(Page<Endereco> enderecoPage) {
+  protected Page<EnderecoResponseDTO> converterPageEnderecoEmPageEnderecoResponseDTO(Page<Endereco> enderecoPage) {
     return enderecoPage.map(
             endereco -> DozerMapper.parseObject(endereco, EnderecoResponseDTO.class)
     );
   }
 
-  private void criarLinksHateoasPageEnderecoResponseDTO(Page<EnderecoResponseDTO> enderecoResponseDTOS,
+  protected void criarLinksHateoasPageEnderecoResponseDTO(Page<EnderecoResponseDTO> enderecoResponseDTOS,
                                                         Page<Endereco> enderecoPage) {
 
     enderecoResponseDTOS.forEach(enderecoResponse -> enderecoPage.forEach(endereco -> {
@@ -155,7 +155,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     }));
   }
 
-  private Link criarLinkHateoasNavegacaoEntrePaginas(Pageable pageable) {
+  protected Link criarLinkHateoasNavegacaoEntrePaginas(Pageable pageable) {
     return linkTo(methodOn(EnderecoRestController.class).findAll(
             pageable.getPageNumber(), pageable.getPageSize(), "ASC"
     )).withSelfRel();
@@ -172,7 +172,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     return new ResponseEntity<>(enderecoResponse, HttpStatus.OK);
   }
 
-  private Endereco atualizarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas , Long id) {
+  protected Endereco atualizarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas , Long id) {
     Endereco endereco = DozerMapper.parseObject(enderecoRequestDTO, Endereco.class);
     endereco.setId(id);
     endereco.setPessoas(pessoas);

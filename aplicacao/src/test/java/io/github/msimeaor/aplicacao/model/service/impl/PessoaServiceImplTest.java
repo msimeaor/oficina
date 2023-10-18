@@ -78,7 +78,7 @@ class PessoaServiceImplTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    startAttributtes();
+    startAttributes();
   }
 
   @Test
@@ -293,7 +293,7 @@ class PessoaServiceImplTest {
 
   }
 
-  public void startAttributtes() {
+  public void startAttributes() {
     pessoaRequestDTO = PessoaRequestDTO.builder()
             .nome(NOME)
             .sexo(SEXO)
