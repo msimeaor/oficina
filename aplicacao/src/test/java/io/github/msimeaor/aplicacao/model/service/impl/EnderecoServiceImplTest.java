@@ -2,6 +2,7 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.enums.UFs;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
+import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.EnderecoRequestDTO;
@@ -176,7 +177,43 @@ class EnderecoServiceImplTest {
   }
 
   @Test
-  void findById() {
+  void whenFindByIdThenReturnSuccess() {
+    when(repository.findById(anyLong())).thenReturn(Optional.of(endereco));
+
+    var response = enderecoService.findById(ID);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(response.getBody().getClass(), EnderecoResponseDTO.class);
+
+    assertEquals(ID ,response.getBody().getId());
+    // Não estamos testando os links Hateoas de moradores
+    assertEquals("</api/enderecos/1>;rel=\"self\"", response.getBody().getLinks().toString());
+  }
+
+  @Test
+  void whenBuscarEnderecoThenReturnSuccess() {
+    when(repository.findById(anyLong())).thenReturn(Optional.of(endereco));
+
+    var response = enderecoService.buscarEndereco(ID);
+
+    assertNotNull(response);
+    assertEquals(Endereco.class, response.getClass());
+    assertEquals(ID, response.getId());
+  }
+
+  @Test
+  void whenBuscarEnderecoThenReturnEnderecoNotFoundException() {
+    when(repository.findById(anyLong())).thenReturn(Optional.empty());
+
+    try {
+      var response = enderecoService.buscarEndereco(2L);
+
+    } catch (Exception ex) {
+      assertNotNull(ex);
+      assertEquals(EnderecoNotFoundException.class, ex.getClass());
+      assertEquals("Endereço não encontrado! ID: " + 2L, ex.getMessage());
+    }
   }
 
   @Test

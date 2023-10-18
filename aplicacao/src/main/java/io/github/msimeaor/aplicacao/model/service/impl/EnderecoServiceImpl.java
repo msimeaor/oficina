@@ -117,7 +117,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     return new ResponseEntity<>(enderecoResponseDTO, HttpStatus.OK);
   }
 
-  private Endereco buscarEndereco(Long id) {
+  protected Endereco buscarEndereco(Long id) {
     return repository.findById(id)
             .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + id));
   }
