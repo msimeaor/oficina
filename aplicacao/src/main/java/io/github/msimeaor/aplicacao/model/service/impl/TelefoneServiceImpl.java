@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -57,43 +58,49 @@ public class TelefoneServiceImpl implements TelefoneService {
     return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.CREATED);
   }
 
-  private void validarNumero(String numero) {
+  protected void validarNumero(String numero) {
     if (repository.findByNumero(numero) != null)
       throw new TelefoneConflictException("Numero já cadastrado!");
   }
 
-  private Pessoa buscarPessoa(Long id) {
+  protected Pessoa buscarPessoa(Long id) {
     return pessoaRepository.findById(id)
             .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
   }
 
-  private Telefone criarTelefoneESalvar(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa) {
+  protected Telefone criarTelefoneESalvar(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa) {
     Telefone telefone = DozerMapper.parseObject(telefoneRequestDTO, Telefone.class);
     telefone.setPessoa(pessoa);
     return repository.save(telefone);
   }
 
-  private void atualizarListaDeTelefonesDaPessoa(Pessoa pessoa, Telefone telefone) {
-    List<Telefone> telefones = pessoa.getTelefones();
+  protected void atualizarListaDeTelefonesDaPessoa(Pessoa pessoa, Telefone telefone) {
+    List<Telefone> telefones;
+
+    if (pessoa.getTelefones() == null)
+      telefones = new ArrayList<>();
+    else
+      telefones = pessoa.getTelefones();
+
     telefones.add(telefone);
     pessoa.setTelefones(telefones);
   }
 
-  private TelefoneResponseDTO criarTelefoneResponseDTO(Telefone telefone) {
+  protected TelefoneResponseDTO criarTelefoneResponseDTO(Telefone telefone) {
     return DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
   }
 
-  private void criarLinksHateoasSelfRelEProprietario(TelefoneResponseDTO telefoneResponse, Telefone telefone) {
+  protected void criarLinksHateoasSelfRelEProprietario(TelefoneResponseDTO telefoneResponse, Telefone telefone) {
     criarLinkHateoasSelfrel(telefoneResponse);
     criarLinkHateoasProprietario(telefoneResponse, telefone);
   }
 
-  private void criarLinkHateoasSelfrel(TelefoneResponseDTO telefoneResponseDTO) {
+  protected void criarLinkHateoasSelfrel(TelefoneResponseDTO telefoneResponseDTO) {
     telefoneResponseDTO.add(linkTo(methodOn(TelefoneRestController.class)
             .findById(telefoneResponseDTO.getId())).withSelfRel());
   }
 
-  private void criarLinkHateoasProprietario(TelefoneResponseDTO telefoneResponseDTO, Telefone telefone) {
+  protected void criarLinkHateoasProprietario(TelefoneResponseDTO telefoneResponseDTO, Telefone telefone) {
     telefoneResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
             .findById(telefone.getPessoa().getId())).withRel("Proprietário"));
   }
@@ -106,7 +113,7 @@ public class TelefoneServiceImpl implements TelefoneService {
     return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.OK);
   }
 
-  private Telefone buscarTelefone(Long id) {
+  protected Telefone buscarTelefone(Long id) {
     return repository.findById(id)
             .orElseThrow(() -> new TelefoneNotFoundException("Telefone não encontrado! ID: " + id));
   }
@@ -128,7 +135,7 @@ public class TelefoneServiceImpl implements TelefoneService {
     return new ResponseEntity<>(assembler.toModel(telefoneResponseDTOS, link), HttpStatus.OK);
   }
 
-  private Page<Telefone> criarPageTelefone(Pageable pageable) {
+  protected Page<Telefone> criarPageTelefone(Pageable pageable) {
     Page<Telefone> telefonePage = repository.findAll(pageable);
     if (telefonePage.isEmpty())
       throw new EmptyListException("Não existem telefones cadastrados!");
@@ -136,13 +143,13 @@ public class TelefoneServiceImpl implements TelefoneService {
     return telefonePage;
   }
 
-  private Page<TelefoneResponseDTO> criarPageTelefoneResponseDTO(Page<Telefone> telefonePage) {
+  protected Page<TelefoneResponseDTO> criarPageTelefoneResponseDTO(Page<Telefone> telefonePage) {
     return telefonePage.map(
             telefone -> DozerMapper.parseObject(telefone, TelefoneResponseDTO.class)
     );
   }
 
-  private Link criarLinkNavegacaoPorPaginas(Pageable pageable) {
+  protected Link criarLinkNavegacaoPorPaginas(Pageable pageable) {
     return linkTo(methodOn(TelefoneRestController.class).findAll(
             pageable.getPageNumber(), pageable.getPageSize(), "ASC"
     )).withSelfRel();
@@ -160,7 +167,7 @@ public class TelefoneServiceImpl implements TelefoneService {
     return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.OK);
   }
 
-  private Telefone atualizarDadosTelefone(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa, Long id) {
+  protected Telefone atualizarDadosTelefone(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa, Long id) {
     Telefone telefone = DozerMapper.parseObject(telefoneRequestDTO, Telefone.class);
     telefone.setId(id);
     telefone.setPessoa(pessoa);
