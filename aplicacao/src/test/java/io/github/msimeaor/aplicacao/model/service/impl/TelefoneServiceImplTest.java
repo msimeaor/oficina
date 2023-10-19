@@ -6,6 +6,7 @@ import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictExceptio
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.TelefoneRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
+import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
@@ -24,7 +25,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 
 import java.util.*;
@@ -42,6 +46,8 @@ class TelefoneServiceImplTest {
   private TelefoneRepository repository;
   @Mock
   private PessoaRepository pessoaRepository;
+  @Mock
+  private PagedResourcesAssembler<TelefoneResponseDTO> assembler;
 
   private Pessoa pessoa;
   private Telefone telefone;
@@ -49,6 +55,8 @@ class TelefoneServiceImplTest {
   private TelefoneResponseDTO telefoneResponseDTO;
   private Pageable pageable;
   private Page<Telefone> telefonePage;
+  private PagedModel<EntityModel<TelefoneResponseDTO>> telefonePagedModel;
+  private List<EntityModel<TelefoneResponseDTO>> entityModels;
 
   private static final Long ID = 1L;
   private static final String NUMERO = "00000000000";
@@ -231,6 +239,37 @@ class TelefoneServiceImplTest {
 
   @Test
   void whenFindAllThenReturnSuccess() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(telefonePage);
+    when(assembler.toModel(any(Page.class), any(Link.class)))
+            .thenReturn(telefonePagedModel);
+
+    var response = telefoneService.findAll(pageable);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(PagedModel.class, response.getBody().getClass());
+
+    // Here I verify if the phone returned list have phone valid registers
+    response.getBody().getContent().forEach(e -> {
+      assertNotNull(e.getContent());
+      assertEquals(TelefoneResponseDTO.class, e.getContent().getClass());
+      assertEquals(ID, e.getContent().getId());
+    });
+
+    // Here I verify if pagination info of response are valid
+    assertNotNull(response.getBody().getMetadata());
+    assertEquals(0, response.getBody().getMetadata().getNumber());
+    assertEquals(1, response.getBody().getMetadata().getTotalPages());
+    assertEquals(1, response.getBody().getMetadata().getTotalElements());
+    assertEquals(1, response.getBody().getMetadata().getSize());
+
+    /*
+    Here I verify if hateoas link of page navigation is correct, based on current page
+    Taking into account that this phone list only has one person registered. If this list had other registry,
+    this hateoas link would contain links to next page, previous page, current page etc.
+     */
+    assertEquals("</api/telefones?page=0&size=10&direction=ASC>;rel=\"self\"",
+            response.getBody().getLinks().toString());
   }
 
   @Test
@@ -342,6 +381,14 @@ class TelefoneServiceImplTest {
     pageable = PageRequest.of(0, 10);
     List<Telefone> telefones = Arrays.asList(telefone);
     telefonePage = new PageImpl<>(telefones, pageable, telefones.size());
+
+    entityModels = new ArrayList<>();
+    EntityModel<TelefoneResponseDTO> entityModel = EntityModel.of(telefoneResponseDTO);
+    entityModels.add(entityModel);
+    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(entityModels.size(),
+            0, entityModels.size());
+    Link link = telefoneService.criarLinkNavegacaoPorPaginas(pageable);
+    telefonePagedModel = PagedModel.of(entityModels, pageMetadata, link);
   }
 
 }

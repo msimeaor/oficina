@@ -26,7 +26,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 
 import java.net.http.WebSocketHandshakeException;
@@ -55,6 +57,8 @@ class EnderecoServiceImplTest {
   private Pageable pageable;
   private Page<Endereco> enderecoPage;
   private Page<EnderecoResponseDTO> enderecoResponseDTOPage;
+  private PagedModel<EntityModel<EnderecoResponseDTO>> enderecoPagedModel;
+  private List<EntityModel<EnderecoResponseDTO>> entityModels;
 
   private static final Long ID = 1L;
   private static final String LOGRADOURO = "Logradouro Test";
@@ -224,7 +228,38 @@ class EnderecoServiceImplTest {
   }
 
   @Test
-  void findAll() {
+  void whenFindAllThenReturnSuccess() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(enderecoPage);
+    when(assembler.toModel(any(Page.class), any(Link.class)))
+            .thenReturn(enderecoPagedModel);
+
+    var response = enderecoService.findAll(pageable);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(PagedModel.class, response.getBody().getClass());
+
+    // Here I verify if the address returned list have address valid registers
+    response.getBody().getContent().forEach(e -> {
+      assertNotNull(e.getContent());
+      assertEquals(EnderecoResponseDTO.class, e.getContent().getClass());
+      assertEquals(ID, e.getContent().getId());
+    });
+
+    // Here I verify if pagination info of response are valid
+    assertNotNull(response.getBody().getMetadata());
+    assertEquals(0, response.getBody().getMetadata().getNumber());
+    assertEquals(1, response.getBody().getMetadata().getTotalPages());
+    assertEquals(1, response.getBody().getMetadata().getTotalElements());
+    assertEquals(1, response.getBody().getMetadata().getSize());
+
+    /*
+    Here I verify if hateoas link of page navigation is correct, based on current page
+    Taking into account that this address list only has one address registered. If this list had other registry,
+    this hateoas link would contain links to next page, previous page, current page etc.
+     */
+    assertEquals("</api/enderecos?page=0&size=10&direction=ASC>;rel=\"self\"",
+            response.getBody().getLinks().toString());
   }
 
   @Test
@@ -359,6 +394,14 @@ class EnderecoServiceImplTest {
 
     List<EnderecoResponseDTO> enderecoResponseDTOS = Arrays.asList(enderecoResponseDTO);
     enderecoResponseDTOPage = new PageImpl<>(enderecoResponseDTOS, pageable, enderecoResponseDTOS.size());
+
+    entityModels = new ArrayList<>();
+    EntityModel<EnderecoResponseDTO> entityModel = EntityModel.of(enderecoResponseDTO);
+    entityModels.add(entityModel);
+    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(entityModels.size(),
+            0, entityModels.size());
+    Link link = enderecoService.criarLinkHateoasNavegacaoEntrePaginas(pageable);
+    enderecoPagedModel = PagedModel.of(entityModels, pageMetadata, link);
   }
 
 }
