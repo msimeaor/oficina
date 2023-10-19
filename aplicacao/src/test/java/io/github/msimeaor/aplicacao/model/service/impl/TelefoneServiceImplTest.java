@@ -5,6 +5,7 @@ import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.TelefoneRequestDTO;
+import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
@@ -284,7 +285,35 @@ class TelefoneServiceImplTest {
   }
 
   @Test
-  void update() {
+  void whenUpdateThenReturnSuccess() {
+    when(repository.findByNumero(anyString())).thenReturn(null);
+    when(pessoaRepository.findById(anyLong())).thenReturn(Optional.of(pessoa));
+    when(repository.findById(anyLong())).thenReturn(Optional.of(telefone));
+    telefone.setNumero("02000000000");
+    when(repository.save(any(Telefone.class))).thenReturn(telefone);
+
+    var response = telefoneService.update(telefoneRequestDTO, ID);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(TelefoneResponseDTO.class, response.getBody().getClass());
+
+    assertEquals(ID ,response.getBody().getId());
+    assertEquals("02000000000", response.getBody().getNumero());
+    // This person id was passed in TelefoneRequestDTO.pessoaId, so he must be present in Telefone.pessoa
+    assertEquals(pessoa.getId(), telefone.getPessoa().getId());
+  }
+
+  @Test
+  void whenAtualizarDadosTelefoneThenReturnSuccess() {
+    when(repository.save(any(Telefone.class))).thenReturn(telefone);
+
+    var response = telefoneService.atualizarDadosTelefone(telefoneRequestDTO, pessoa, ID);
+
+    assertNotNull(response);
+    assertEquals(Telefone.class, response.getClass());
+    assertEquals(ID, response.getId());
+    assertEquals(pessoa.getId(), response.getPessoa().getId());
   }
 
   public void startAttributes() {

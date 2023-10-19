@@ -304,7 +304,7 @@ class EnderecoServiceImplTest {
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(response.getBody().getClass(), EnderecoResponseDTO.class);
+    assertEquals(EnderecoResponseDTO.class, response.getBody().getClass());
 
     assertEquals(ID ,response.getBody().getId());
     // Não estamos testando os links Hateoas de moradores
