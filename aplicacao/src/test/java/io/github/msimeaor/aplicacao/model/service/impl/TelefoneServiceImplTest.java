@@ -5,10 +5,7 @@ import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.TelefoneRequestDTO;
-import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
-import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
-import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.entity.Telefone;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
@@ -56,7 +53,6 @@ class TelefoneServiceImplTest {
   private Pageable pageable;
   private Page<Telefone> telefonePage;
   private PagedModel<EntityModel<TelefoneResponseDTO>> telefonePagedModel;
-  private List<EntityModel<TelefoneResponseDTO>> entityModels;
 
   private static final Long ID = 1L;
   private static final String NUMERO = "00000000000";
@@ -65,7 +61,7 @@ class TelefoneServiceImplTest {
   @BeforeEach
   void setup() {
     MockitoAnnotations.openMocks(this);
-    startAttributes();
+    initializeTestsEntities();
   }
 
   @Test
@@ -116,7 +112,7 @@ class TelefoneServiceImplTest {
     when(pessoaRepository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
-      var response = telefoneService.buscarPessoa(2L);
+      telefoneService.buscarPessoa(2L);
 
     } catch (Exception ex) {
       assertNotNull(ex);
@@ -228,7 +224,7 @@ class TelefoneServiceImplTest {
     when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
-      var response = telefoneService.buscarTelefone(2L);
+      telefoneService.buscarTelefone(2L);
 
     } catch (Exception ex) {
       assertNotNull(ex);
@@ -292,7 +288,7 @@ class TelefoneServiceImplTest {
     when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
     try {
-      var response = telefoneService.criarPageTelefone(pageable);
+      telefoneService.criarPageTelefone(pageable);
 
     } catch (Exception ex) {
       assertNotNull(ex);
@@ -355,7 +351,7 @@ class TelefoneServiceImplTest {
     assertEquals(pessoa.getId(), response.getPessoa().getId());
   }
 
-  public void startAttributes() {
+  public void initializeTestsEntities() {
     pessoa = Pessoa.builder()
             .id(ID)
             .nome("Nome Test")
@@ -379,10 +375,10 @@ class TelefoneServiceImplTest {
             .build();
 
     pageable = PageRequest.of(0, 10);
-    List<Telefone> telefones = Arrays.asList(telefone);
+    List<Telefone> telefones = Collections.singletonList(telefone);
     telefonePage = new PageImpl<>(telefones, pageable, telefones.size());
 
-    entityModels = new ArrayList<>();
+    List<EntityModel<TelefoneResponseDTO>> entityModels = new ArrayList<>();
     EntityModel<TelefoneResponseDTO> entityModel = EntityModel.of(telefoneResponseDTO);
     entityModels.add(entityModel);
     PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(entityModels.size(),

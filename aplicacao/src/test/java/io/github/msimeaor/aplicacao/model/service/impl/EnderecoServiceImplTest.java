@@ -4,11 +4,9 @@ import io.github.msimeaor.aplicacao.enums.UFs;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
-import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.EnderecoRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
-import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
@@ -31,7 +29,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 
-import java.net.http.WebSocketHandshakeException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,7 +55,6 @@ class EnderecoServiceImplTest {
   private Page<Endereco> enderecoPage;
   private Page<EnderecoResponseDTO> enderecoResponseDTOPage;
   private PagedModel<EntityModel<EnderecoResponseDTO>> enderecoPagedModel;
-  private List<EntityModel<EnderecoResponseDTO>> entityModels;
 
   private static final Long ID = 1L;
   private static final String LOGRADOURO = "Logradouro Test";
@@ -67,7 +63,7 @@ class EnderecoServiceImplTest {
   @BeforeEach
   void setup() {
     MockitoAnnotations.openMocks(this);
-    startAttributes();
+    initializeTestsEntities();
   }
 
   @Test
@@ -119,7 +115,7 @@ class EnderecoServiceImplTest {
     when(pessoaRepository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
-      var response = enderecoService.criarListaPessoaPorId(Collections.singletonList(2L));
+      enderecoService.criarListaPessoaPorId(Collections.singletonList(2L));
 
     } catch (Exception ex) {
       assertNotNull(ex);
@@ -132,7 +128,7 @@ class EnderecoServiceImplTest {
   void whenCriarListaPessoaPorIdThenReturnNull() {
     var response = enderecoService.criarListaPessoaPorId(null);
 
-    assertEquals(null, response);
+    assertNull(response);
   }
 
   @Test
@@ -218,7 +214,7 @@ class EnderecoServiceImplTest {
     when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
-      var response = enderecoService.buscarEndereco(2L);
+      enderecoService.buscarEndereco(2L);
 
     } catch (Exception ex) {
       assertNotNull(ex);
@@ -282,7 +278,7 @@ class EnderecoServiceImplTest {
     when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
     try {
-      var response = enderecoService.criarPageEndereco(pageable);
+      enderecoService.criarPageEndereco(pageable);
 
     } catch (Exception ex) {
       assertNotNull(ex);
@@ -364,7 +360,7 @@ class EnderecoServiceImplTest {
     assertEquals(ID, response.getPessoas().get(0).getId());
   }
 
-  private void startAttributes() {
+  private void initializeTestsEntities() {
     pessoa = Pessoa.builder()
             .id(ID)
             .nome("Nome Test")
@@ -389,13 +385,13 @@ class EnderecoServiceImplTest {
             .build();
 
     pageable = PageRequest.of(0, 10);
-    List<Endereco> enderecos = Arrays.asList(endereco);
+    List<Endereco> enderecos = Collections.singletonList(endereco);
     enderecoPage = new PageImpl<>(enderecos, pageable, enderecos.size());
 
-    List<EnderecoResponseDTO> enderecoResponseDTOS = Arrays.asList(enderecoResponseDTO);
+    List<EnderecoResponseDTO> enderecoResponseDTOS = Collections.singletonList(enderecoResponseDTO);
     enderecoResponseDTOPage = new PageImpl<>(enderecoResponseDTOS, pageable, enderecoResponseDTOS.size());
 
-    entityModels = new ArrayList<>();
+    List<EntityModel<EnderecoResponseDTO>> entityModels = new ArrayList<>();
     EntityModel<EnderecoResponseDTO> entityModel = EntityModel.of(enderecoResponseDTO);
     entityModels.add(entityModel);
     PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(entityModels.size(),

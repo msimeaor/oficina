@@ -35,7 +35,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,14 +57,12 @@ class PessoaServiceImplTest {
 
   private PessoaRequestDTO pessoaRequestDTO;
   private Pessoa pessoa;
-  private PessoaResponseDTO pessoaResponseDTO;
   private Endereco endereco;
   private Veiculo veiculo;
   private Telefone telefone;
   private Pageable pageable;
   private Page<Pessoa> pessoaPage;
   private PagedModel<EntityModel<PessoaResponseDTO>> pessoaPagedModel;
-  private List<EntityModel<PessoaResponseDTO>> entityModels;
 
   private static final String NOME = "Nome Test";
   private static final String SEXO = "MASCULINO";
@@ -77,7 +74,7 @@ class PessoaServiceImplTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    startAttributes();
+    initializeTestsEntities();
   }
 
   @Test
@@ -118,7 +115,7 @@ class PessoaServiceImplTest {
     when(enderecoRepository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
-      var response = pessoaService.buscarEndereco(2L);
+      pessoaService.buscarEndereco(2L);
 
     } catch (Exception ex) {
       assertEquals(EnderecoNotFoundException.class, ex.getClass());
@@ -140,7 +137,7 @@ class PessoaServiceImplTest {
   void whenConverterListaTelefoneEmListaTelefoneResponseDTOThenReturnNull() {
     var response = pessoaService.converterListaTelefoneEmListaTelefoneResponseDTO(null);
 
-    assertEquals(null, response);
+    assertNull(response);
   }
 
   @Test
@@ -156,7 +153,7 @@ class PessoaServiceImplTest {
   void whenConverterEnderecoEmEnderecoResponseDTOThenReturnNull() {
     var response = pessoaService.converterEnderecoEmEnderecoResponseDTO(null);
 
-    assertEquals(null, response);
+    assertNull(response);
   }
 
   @Test
@@ -178,7 +175,7 @@ class PessoaServiceImplTest {
     when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
-      var response = pessoaService.buscarPessoa(2L);
+      pessoaService.buscarPessoa(2L);
 
     } catch (Exception ex) {
       assertEquals(PessoaNotFoundException.class, ex.getClass());
@@ -241,7 +238,7 @@ class PessoaServiceImplTest {
     when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
     try {
-      var response = pessoaService.criarPagePessoa(pageable);
+      pessoaService.criarPagePessoa(pageable);
 
     } catch (Exception ex) {
       assertEquals(EmptyListException.class, ex.getClass());
@@ -344,7 +341,7 @@ class PessoaServiceImplTest {
             .thenReturn(Page.empty());
 
     try {
-      var response = pessoaService.criarPagePessoaComFindByNomeLike("%" + NOME + "%", pageable);
+      pessoaService.criarPagePessoaComFindByNomeLike("%" + NOME + "%", pageable);
 
     } catch (Exception ex) {
       assertNotNull(ex);
@@ -354,7 +351,7 @@ class PessoaServiceImplTest {
 
   }
 
-  public void startAttributes() {
+  public void initializeTestsEntities() {
     pessoaRequestDTO = PessoaRequestDTO.builder()
             .nome(NOME)
             .sexo(SEXO)
@@ -387,17 +384,17 @@ class PessoaServiceImplTest {
             .pessoa(pessoa)
             .build();
 
-    pessoaResponseDTO = PessoaResponseDTO.builder()
+    PessoaResponseDTO pessoaResponseDTO = PessoaResponseDTO.builder()
             .id(ID)
             .nome(NOME)
             .sexo(SEXO)
             .build();
 
     pageable = PageRequest.of(0, 10);
-    List<Pessoa> pessoas = Arrays.asList(pessoa);
+    List<Pessoa> pessoas = Collections.singletonList(pessoa);
     pessoaPage = new PageImpl<>(pessoas, pageable, pessoas.size());
 
-    entityModels = new ArrayList<>();
+    List<EntityModel<PessoaResponseDTO>> entityModels = new ArrayList<>();
     EntityModel<PessoaResponseDTO> entityModel = EntityModel.of(pessoaResponseDTO);
     entityModels.add(entityModel);
     PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(entityModels.size(),
