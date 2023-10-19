@@ -30,14 +30,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -62,14 +60,12 @@ class PessoaServiceImplTest {
   private Endereco endereco;
   private Veiculo veiculo;
   private Telefone telefone;
-  private Page<Pessoa> pessoaPage;
   private Pageable pageable;
+  private Page<Pessoa> pessoaPage;
+  private PagedModel<EntityModel<PessoaResponseDTO>> pessoaPagedModel;
 
   private static final String NOME = "Nome Test";
-  private static final String CPF = "000.000.000-00";
-  private static final String EMAIL = "Email Test";
   private static final String SEXO = "MASCULINO";
-  private static final LocalDate DATA_NASCIMENTO = LocalDate.of(2000, 01, 01);
   private static final Long ID = 1L;
   private static final String PLACA = "JJJ1111";
   private static final String LOGRADOURO = "Logradouro Test";
@@ -78,7 +74,7 @@ class PessoaServiceImplTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    startAttributes();
+    initializeTestsEntities();
   }
 
   @Test
@@ -119,7 +115,7 @@ class PessoaServiceImplTest {
     when(enderecoRepository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
-      var response = pessoaService.buscarEndereco(2L);
+      pessoaService.buscarEndereco(2L);
 
     } catch (Exception ex) {
       assertEquals(EnderecoNotFoundException.class, ex.getClass());
@@ -141,7 +137,7 @@ class PessoaServiceImplTest {
   void whenConverterListaTelefoneEmListaTelefoneResponseDTOThenReturnNull() {
     var response = pessoaService.converterListaTelefoneEmListaTelefoneResponseDTO(null);
 
-    assertEquals(null, response);
+    assertNull(response);
   }
 
   @Test
@@ -157,7 +153,7 @@ class PessoaServiceImplTest {
   void whenConverterEnderecoEmEnderecoResponseDTOThenReturnNull() {
     var response = pessoaService.converterEnderecoEmEnderecoResponseDTO(null);
 
-    assertEquals(null, response);
+    assertNull(response);
   }
 
   @Test
@@ -179,7 +175,7 @@ class PessoaServiceImplTest {
     when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
     try {
-      var response = pessoaService.buscarPessoa(2L);
+      pessoaService.buscarPessoa(2L);
 
     } catch (Exception ex) {
       assertEquals(PessoaNotFoundException.class, ex.getClass());
@@ -187,9 +183,40 @@ class PessoaServiceImplTest {
     }
   }
 
-  // TODO completar depois
   @Test
-  void whenFindAllThenReturnSuccess() {}
+  void whenFindAllThenReturnSuccess() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(pessoaPage);
+    when(assembler.toModel(any(Page.class), any(Link.class)))
+            .thenReturn(pessoaPagedModel);
+
+    var response = pessoaService.findAll(pageable);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(PagedModel.class, response.getBody().getClass());
+
+    // Here I verify if the person returned list have person valid registers
+    response.getBody().getContent().forEach(e -> {
+      assertNotNull(e.getContent());
+      assertEquals(PessoaResponseDTO.class, e.getContent().getClass());
+      assertEquals(ID, e.getContent().getId());
+    });
+
+    // Here I verify if pagination info of response are valid
+    assertNotNull(response.getBody().getMetadata());
+    assertEquals(0, response.getBody().getMetadata().getNumber());
+    assertEquals(1, response.getBody().getMetadata().getTotalPages());
+    assertEquals(1, response.getBody().getMetadata().getTotalElements());
+    assertEquals(1, response.getBody().getMetadata().getSize());
+
+    /*
+    Here I verify if hateoas link of page navigation is correct, based on current page
+    Taking into account that this person list only has one person register. If this list had other registry,
+    this hateoas link would contain links to next page, previous page, current page etc.
+     */
+    assertEquals("</api/pessoas?page=0&size=10&direction=ASC>;rel=\"self\"",
+            response.getBody().getLinks().toString());
+  }
 
   @Test
   void whenCriarPagePessoaThenReturnSuccess() {
@@ -211,7 +238,7 @@ class PessoaServiceImplTest {
     when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
     try {
-      var response = pessoaService.criarPagePessoa(pageable);
+      pessoaService.criarPagePessoa(pageable);
 
     } catch (Exception ex) {
       assertEquals(EmptyListException.class, ex.getClass());
@@ -256,9 +283,40 @@ class PessoaServiceImplTest {
     assertEquals("Nome updated", response.getBody().getNome());
   }
 
-  // TODO completar depois
   @Test
-  void whenFindByNomeLikeThenReturnSuccess() {}
+  void whenFindByNomeLikeThenReturnSuccess() {
+    when(repository.findByNomeLike(anyString(), any(Pageable.class))).thenReturn(pessoaPage);
+    when(assembler.toModel(any(Page.class), any(Link.class)))
+            .thenReturn(pessoaPagedModel);
+
+    var response = pessoaService.findByNomeLike("%" + NOME + "%", pageable);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(PagedModel.class, response.getBody().getClass());
+
+    // Here I verify if the person returned list have person valid registers
+    response.getBody().getContent().forEach(e -> {
+      assertNotNull(e.getContent());
+      assertEquals(PessoaResponseDTO.class, e.getContent().getClass());
+      assertEquals(ID, e.getContent().getId());
+    });
+
+    // Here I verify if pagination info of response are valid
+    assertNotNull(response.getBody().getMetadata());
+    assertEquals(0, response.getBody().getMetadata().getNumber());
+    assertEquals(1, response.getBody().getMetadata().getTotalPages());
+    assertEquals(1, response.getBody().getMetadata().getTotalElements());
+    assertEquals(1, response.getBody().getMetadata().getSize());
+
+    /*
+    Here I verify if hateoas link of page navigation is correct, based on current page
+    Taking into account that this person list only has one person registered. If this list had other registry,
+    this hateoas link would contain links to next page, previous page, current page etc.
+     */
+    assertEquals("</api/pessoas?page=0&size=10&direction=ASC>;rel=\"self\"",
+            response.getBody().getLinks().toString());
+  }
 
   @Test
   void whenCriarPagePessoaComFindByNomeLikeThenReturnSuccess() {
@@ -283,7 +341,7 @@ class PessoaServiceImplTest {
             .thenReturn(Page.empty());
 
     try {
-      var response = pessoaService.criarPagePessoaComFindByNomeLike("%" + NOME + "%", pageable);
+      pessoaService.criarPagePessoaComFindByNomeLike("%" + NOME + "%", pageable);
 
     } catch (Exception ex) {
       assertNotNull(ex);
@@ -293,7 +351,7 @@ class PessoaServiceImplTest {
 
   }
 
-  public void startAttributes() {
+  public void initializeTestsEntities() {
     pessoaRequestDTO = PessoaRequestDTO.builder()
             .nome(NOME)
             .sexo(SEXO)
@@ -326,9 +384,23 @@ class PessoaServiceImplTest {
             .pessoa(pessoa)
             .build();
 
+    PessoaResponseDTO pessoaResponseDTO = PessoaResponseDTO.builder()
+            .id(ID)
+            .nome(NOME)
+            .sexo(SEXO)
+            .build();
+
     pageable = PageRequest.of(0, 10);
-    List<Pessoa> pessoas = Arrays.asList(pessoa);
+    List<Pessoa> pessoas = Collections.singletonList(pessoa);
     pessoaPage = new PageImpl<>(pessoas, pageable, pessoas.size());
+
+    List<EntityModel<PessoaResponseDTO>> entityModels = new ArrayList<>();
+    EntityModel<PessoaResponseDTO> entityModel = EntityModel.of(pessoaResponseDTO);
+    entityModels.add(entityModel);
+    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(entityModels.size(),
+            0, entityModels.size());
+    Link link = pessoaService.criarLinkHateoasNavegacaoPorPaginas(pageable);
+    pessoaPagedModel = PagedModel.of(entityModels, pageMetadata, link);
   }
 
 }
