@@ -8,8 +8,10 @@ import io.github.msimeaor.aplicacao.enums.UFs;
 import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.integration.dto.request.PessoaRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.PessoaResponseDTOTest;
+import io.github.msimeaor.aplicacao.integration.helper.PessoaWrapper;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
 import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
+import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
@@ -21,6 +23,8 @@ import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -166,6 +170,45 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
     assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
     assertEquals("Cliente não encontrado! ID: 100", exceptionResponse.getMensagemErro());
     assertEquals("uri=/api/pessoas/100", exceptionResponse.getDetalhesErro());
+  }
+
+  @Test
+  @Order(4)
+  public void findAll() throws JsonProcessingException {
+    /*
+    Have not been added any request param on this request. Therefore, the response returns a paginate list containig
+    ten ocurrences per page, being the first page the page zero.
+    In this case, as the database has 45 records, the paginate list contain 5 pages.
+    */
+    var content = given().spec(specification)
+            .basePath("/api/pessoas")
+            .when()
+              .get()
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    PessoaWrapper response = mapper.readValue(content, PessoaWrapper.class);
+    List<PessoaResponseDTOTest> pessoaResponseDTOTestList = response.getPessoaEmbedded().getPessoaResponseDTOList();
+
+    assertNotNull(pessoaResponseDTOTestList);
+    assertEquals(10, pessoaResponseDTOTestList.size());
+    assertEquals(35, pessoaResponseDTOTestList.get(0).getId());
+    assertEquals("Male", pessoaResponseDTOTestList.get(0).getSexo());
+    assertEquals("Adolphus", pessoaResponseDTOTestList.get(0).getNome());
+    assertEquals(LocalDate.of(2023, 07, 30), pessoaResponseDTOTestList.get(0)
+            .getDataNascimento());
+    assertNull(pessoaResponseDTOTestList.get(0).getCpf());
+
+    assertTrue(content.contains(
+      "\"_links\":{\"first\":{\"href\":\"http://localhost:8888/api/pessoas?direction=ASC&page=0&size=10&sort=nome,asc\"}," +
+      "\"self\":{\"href\":\"http://localhost:8888/api/pessoas?page=0&size=10&direction=ASC\"}," +
+      "\"next\":{\"href\":\"http://localhost:8888/api/pessoas?direction=ASC&page=1&size=10&sort=nome,asc\"}," +
+      "\"last\":{\"href\":\"http://localhost:8888/api/pessoas?direction=ASC&page=4&size=10&sort=nome,asc\"}}"));
+    assertTrue(content.contains(
+            "\"page\":{\"size\":10,\"totalElements\":45,\"totalPages\":5,\"number\":0}"));
   }
 
   @Test
