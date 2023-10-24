@@ -111,6 +111,38 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
     assertTrue(content.contains("{\"self\":{\"href\":\"http://localhost:8888/api/pessoas/52\"}}"));
   }
 
+  @Test
+  @Order(2)
+  public void findByIdWithAValidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/pessoas")
+            // The first id found in database is 8L. This was a change I made in the migration.
+            .pathParam("id", 8L)
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var pessoaResponseDTO = mapper.readValue(content, PessoaResponseDTOTest.class);
+
+    /*
+    During migration, the database does not contain registered CPFs.
+    Therefore, the assertions do not contain validation of the CPF variable, but records that contain CPF,
+    must return an object with the CPF variable filled in
+    */
+    assertNotNull(pessoaResponseDTO);
+    assertEquals(8L, pessoaResponseDTO.getId());
+    assertEquals("Curtis", pessoaResponseDTO.getNome());
+    assertEquals("cattew7@discovery.com", pessoaResponseDTO.getEmail());
+    assertEquals("Male", pessoaResponseDTO.getSexo());
+    assertEquals(LocalDate.of(2022, 11, 9), pessoaResponseDTO.getDataNascimento());
+
+    assertTrue(content.contains("{\"self\":{\"href\":\"http://localhost:8888/api/pessoas/8\"}}"));
+  }
+
   public void mockPessoa() {
     pessoaRequestDTOTest = PessoaRequestDTOTest.builder()
             .nome("MATHEUS SIMEAO")
