@@ -70,7 +70,9 @@ public class PessoaServiceImpl {
 
   private Pessoa criarPessoaESalvar(PessoaRequestDTO pessoaRequestDTO) {
     Pessoa pessoa = DozerMapper.parseObject(pessoaRequestDTO, Pessoa.class);
-    pessoa.setEndereco(buscarEndereco(pessoaRequestDTO.getEnderecoId()));
+    if (pessoaRequestDTO.getEnderecoId() != null) {
+      pessoa.setEndereco(buscarEndereco(pessoaRequestDTO.getEnderecoId()));
+    }
     return repository.save(pessoa);
   }
 
