@@ -212,7 +212,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @Order(4)
+  @Order(5)
   public void updateWithoutEnderecoIdAndAValidPessoaId() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath("/api/pessoas")
@@ -245,7 +245,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @Order(5)
+  @Order(6)
   public void updateWithEnderecoIdAndAValidPessoaId() throws JsonProcessingException {
     pessoaRequestDTOTestUpdated.setNome("FERDINANDO CORREIO");
     pessoaRequestDTOTestUpdated.setEnderecoId(1L);
@@ -273,7 +273,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @Order(6)
+  @Order(7)
   public void updateWithEnderecoIdAndAnInvalidPessoaId() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath("/api/pessoas")
@@ -294,6 +294,38 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
     assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
     assertEquals("Cliente não encontrado! ID: 100", exceptionResponse.getMensagemErro());
     assertEquals("uri=/api/pessoas/100", exceptionResponse.getDetalhesErro());
+  }
+
+  @Test
+  @Order(8)
+  public void findByNome() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/pessoas/findByNome")
+            .param("nome", "adol")
+            .when()
+              .get()
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    PessoaWrapper response = mapper.readValue(content, PessoaWrapper.class);
+    List<PessoaResponseDTOTest> pessoaResponseDTOTestList = response.getPessoaEmbedded().getPessoaResponseDTOList();
+
+    assertNotNull(pessoaResponseDTOTestList);
+    assertEquals(1, pessoaResponseDTOTestList.size());
+    assertEquals(35, pessoaResponseDTOTestList.get(0).getId());
+    assertEquals("Male", pessoaResponseDTOTestList.get(0).getSexo());
+    assertEquals("Adolphus", pessoaResponseDTOTestList.get(0).getNome());
+    assertEquals(LocalDate.of(2023, 07, 30), pessoaResponseDTOTestList.get(0)
+            .getDataNascimento());
+    assertNull(pessoaResponseDTOTestList.get(0).getCpf());
+
+    assertTrue(content.contains(
+            "\"_links\":{\"self\":{\"href\":\"http://localhost:8888/api/pessoas?page=0&size=5&direction=ASC\"}}"));
+    assertTrue(content.contains(
+            "\"page\":{\"size\":5,\"totalElements\":1,\"totalPages\":1,\"number\":0}"));
   }
 
   public static void startTestEntities() {
