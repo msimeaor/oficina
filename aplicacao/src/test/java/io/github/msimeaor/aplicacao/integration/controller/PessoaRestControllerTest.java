@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.msimeaor.aplicacao.config.TestConfigs;
 import io.github.msimeaor.aplicacao.enums.UFs;
+import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.integration.dto.request.PessoaRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.PessoaResponseDTOTest;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
@@ -13,12 +14,15 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Date;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -141,6 +145,30 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
     assertEquals(LocalDate.of(2022, 11, 9), pessoaResponseDTO.getDataNascimento());
 
     assertTrue(content.contains("{\"self\":{\"href\":\"http://localhost:8888/api/pessoas/8\"}}"));
+  }
+
+  // Validation test of the findById method by passing an ID that is not present in database
+  @Test
+  @Order(3)
+  public void findByIdWithAnInvalidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/pessoas")
+            .pathParam("id", 100L)
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    var exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertNotNull(exceptionResponse);
+    assertEquals(ExceptionResponse.class, exceptionResponse.getClass());
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Cliente não encontrado! ID: 100", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/pessoas/100", exceptionResponse.getDetalhesErro());
   }
 
   public void mockPessoa() {
