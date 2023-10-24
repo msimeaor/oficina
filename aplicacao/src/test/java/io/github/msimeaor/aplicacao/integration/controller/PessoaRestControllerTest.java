@@ -42,7 +42,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
 
   @Test
   @Order(0)
-  public void savePersonWithoutEnderecoIdWithSucces() throws JsonProcessingException {
+  public void savePersonWithoutEnderecoId() throws JsonProcessingException {
     mockPessoa();
 
     specification = new RequestSpecBuilder()
@@ -80,7 +80,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
 
   @Test
   @Order(1)
-  public void savePersonWithPessoaIdWithSuccess() throws JsonProcessingException {
+  public void savePersonWithPessoaId() throws JsonProcessingException {
     mockPessoaWithPessoaId();
 
     var content = given().spec(specification)
