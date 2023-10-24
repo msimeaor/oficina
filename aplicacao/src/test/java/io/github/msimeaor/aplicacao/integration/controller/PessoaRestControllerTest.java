@@ -20,9 +20,7 @@ import org.springframework.http.MediaType;
 import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Date;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -32,19 +30,20 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
   private static ObjectMapper mapper;
   private static PessoaRequestDTOTest pessoaRequestDTOTest;
   private static PessoaRequestDTOTest pessoaRequestDTOTestWithPessoaId;
+  private static PessoaRequestDTOTest pessoaRequestDTOTestUpdated;
 
   @BeforeAll
   public static void setup() {
     mapper = new ObjectMapper();
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     mapper.findAndRegisterModules();
+
+    startTestEntities();
   }
 
   @Test
   @Order(0)
   public void savePersonWithoutEnderecoId() throws JsonProcessingException {
-    mockPessoa();
-
     specification = new RequestSpecBuilder()
             .setPort(TestConfigs.SERVER_PORT)
             .addHeader(TestConfigs.ORIGIN, "http://localhost:8080")
@@ -81,8 +80,6 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
   @Test
   @Order(1)
   public void savePersonWithPessoaId() throws JsonProcessingException {
-    mockPessoaWithPessoaId();
-
     var content = given().spec(specification)
             .basePath("/api/pessoas")
             .body(pessoaRequestDTOTestWithPessoaId)
@@ -171,7 +168,92 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
     assertEquals("uri=/api/pessoas/100", exceptionResponse.getDetalhesErro());
   }
 
-  public void mockPessoa() {
+  @Test
+  @Order(4)
+  public void updateWithoutEnderecoIdAndAValidPessoaId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/pessoas")
+            .body(pessoaRequestDTOTestUpdated)
+            .pathParam("id", 51L)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var pessoaResponseDTO = mapper.readValue(content, PessoaResponseDTOTest.class);
+
+    assertNotNull(pessoaResponseDTO);
+    assertEquals(51L, pessoaResponseDTO.getId());
+    assertEquals(pessoaRequestDTOTestUpdated.getNome(), pessoaResponseDTO.getNome());
+    assertEquals(pessoaRequestDTOTestUpdated.getCpf(), pessoaResponseDTO.getCpf());
+    assertEquals(pessoaRequestDTOTestUpdated.getEmail(), pessoaResponseDTO.getEmail());
+    assertEquals(pessoaRequestDTOTestUpdated.getSexo(), pessoaResponseDTO.getSexo());
+    assertEquals(pessoaRequestDTOTestUpdated.getDataNascimento(), pessoaResponseDTO.getDataNascimento());
+    /*
+    Take into account that the updated person did not have any registered address
+    If the person had an address, he would remain in object of response body
+    */
+    assertNull(pessoaResponseDTO.getEnderecoResponse());
+
+    assertTrue(content.contains("{\"self\":{\"href\":\"http://localhost:8888/api/pessoas/51\"}}"));
+  }
+
+  @Test
+  @Order(5)
+  public void updateWithEnderecoIdAndAValidPessoaId() throws JsonProcessingException {
+    pessoaRequestDTOTestUpdated.setNome("FERDINANDO CORREIO");
+    pessoaRequestDTOTestUpdated.setEnderecoId(1L);
+
+    var content = given().spec(specification)
+            .basePath("/api/pessoas")
+            .body(pessoaRequestDTOTestUpdated)
+            .pathParam("id", 51L)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var pessoaResponseDTO = mapper.readValue(content, PessoaResponseDTOTest.class);
+
+    assertNotNull(pessoaResponseDTO);
+    assertEquals(51L, pessoaResponseDTO.getId());
+    assertEquals("FERDINANDO CORREIO", pessoaResponseDTO.getNome());
+    assertNotNull(pessoaResponseDTO.getEnderecoResponse());
+    assertEquals(1L, pessoaResponseDTO.getEnderecoResponse().getId());
+    assertTrue(content.contains("{\"self\":{\"href\":\"http://localhost:8888/api/pessoas/51\"}}"));
+  }
+
+  @Test
+  @Order(6)
+  public void updateWithEnderecoIdAndAnInvalidPessoaId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/pessoas")
+            .body(pessoaRequestDTOTestUpdated)
+            .pathParam("id", 100L)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    var exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertNotNull(exceptionResponse);
+    assertEquals(ExceptionResponse.class, exceptionResponse.getClass());
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Cliente não encontrado! ID: 100", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/pessoas/100", exceptionResponse.getDetalhesErro());
+  }
+
+  public static void startTestEntities() {
     pessoaRequestDTOTest = PessoaRequestDTOTest.builder()
             .nome("MATHEUS SIMEAO")
             .cpf("000.000.000-00")
@@ -179,9 +261,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
             .email("maatsimeao@gmail.com")
             .dataNascimento(LocalDate.of(2002, 05, 11))
             .build();
-  }
 
-  public void mockPessoaWithPessoaId() {
     pessoaRequestDTOTestWithPessoaId = PessoaRequestDTOTest.builder()
             .nome("ROGERIO MADURO")
             .cpf("999.999.999-99")
@@ -189,6 +269,14 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
             .email("rogeriomaduro@gmail.com")
             .dataNascimento(LocalDate.of(2002, 05, 11))
             .enderecoId(1L)
+            .build();
+
+    pessoaRequestDTOTestUpdated = PessoaRequestDTOTest.builder()
+            .nome("FRANCISCO VIEIRA")
+            .cpf("123.456.789-10")
+            .sexo("FEMININO")
+            .email("franciscovieira@gmail.com")
+            .dataNascimento(LocalDate.of(2004, 03, 12))
             .build();
   }
 

@@ -162,7 +162,9 @@ public class PessoaServiceImpl {
   private Pessoa atualizarDadosPessoaESalvar(PessoaRequestDTO pessoaRequestDTO, Long id) {
     Pessoa p = DozerMapper.parseObject(pessoaRequestDTO, Pessoa.class);
     p.setId(id);
-    p.setEndereco(buscarEndereco(pessoaRequestDTO.getEnderecoId()));
+    if (pessoaRequestDTO.getEnderecoId() != null) {
+      p.setEndereco(buscarEndereco(pessoaRequestDTO.getEnderecoId()));
+    }
     return repository.save(p);
   }
 
