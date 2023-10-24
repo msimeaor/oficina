@@ -1,0 +1,10 @@
+insert into endereco (id, logradouro, uf) values (1, '68643 Shopko Hill', 'DF'),
+ (2, '451 Hanson Way', 'DF'),
+ (3, '22 Bayside Crossing', 'DF'),
+ (4, '832 Nancy Point', 'DF'),
+ (5, '620 Westridge Lane', 'DF'),
+ (6, '66219 Forest Way', 'DF'),
+ (7, '667 Delladonna Avenue', 'DF'),
+ (8, '46924 Eliot Pass', 'DF'),
+ (9, '8964 New Castle Lane', 'DF'),
+ (10, '1 Spenser Park', 'DF');
