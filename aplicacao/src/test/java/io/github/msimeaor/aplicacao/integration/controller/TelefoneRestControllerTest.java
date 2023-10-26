@@ -96,6 +96,52 @@ public class TelefoneRestControllerTest extends AbstractIntegrationTest {
     assertEquals("uri=/api/telefones", exceptionResponse.getDetalhesErro());
   }
 
+  @Test
+  @Order(2)
+  public void findByIdWithAValidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/telefones")
+            .pathParam("id", 11L)
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var telefoneResponseDTO = mapper.readValue(content, TelefoneResponseDTOTest.class);
+
+    assertNotNull(telefoneResponseDTO);
+    assertEquals(11L, telefoneResponseDTO.getId());
+    assertEquals("61991979110", telefoneResponseDTO.getNumero());
+
+    assertTrue(content.contains("\"self\":{\"href\":\"http://localhost:8888/api/telefones/11\"}"));
+    assertTrue(content.contains("\"Proprietário\":{\"href\":\"http://localhost:8888/api/pessoas/40\"}"));
+  }
+
+  @Test
+  @Order(3)
+  public void saveWithAnInvalidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/telefones")
+            .pathParam("id", 12L)
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    ExceptionResponse exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertNotNull(exceptionResponse);
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Telefone não encontrado! ID: 12", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/telefones/12", exceptionResponse.getDetalhesErro());
+  }
+
   private static void startTestEntities() {
     telefoneRequestDTOTest = TelefoneRequestDTOTest.builder()
             .numero("61991979110")
