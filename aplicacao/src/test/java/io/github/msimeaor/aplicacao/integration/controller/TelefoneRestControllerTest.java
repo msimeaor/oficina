@@ -7,6 +7,7 @@ import io.github.msimeaor.aplicacao.config.TestConfigs;
 import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.integration.dto.request.TelefoneRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.TelefoneResponseDTOTest;
+import io.github.msimeaor.aplicacao.integration.helper.telefone.TelefoneWrapper;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -17,6 +18,8 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+
+import java.util.List;
 
 import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -140,6 +143,36 @@ public class TelefoneRestControllerTest extends AbstractIntegrationTest {
     assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
     assertEquals("Telefone não encontrado! ID: 12", exceptionResponse.getMensagemErro());
     assertEquals("uri=/api/telefones/12", exceptionResponse.getDetalhesErro());
+  }
+
+  @Test
+  @Order(4)
+  public void findAll() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/telefones")
+            .when()
+              .get()
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    TelefoneWrapper response = mapper.readValue(content, TelefoneWrapper.class);
+    List<TelefoneResponseDTOTest> telefoneResponseDTOTestList = response.getTelefoneEmbedded().getTelefoneResponseDTOList();
+
+    assertNotNull(telefoneResponseDTOTestList);
+    assertEquals(10, telefoneResponseDTOTestList.size());
+    assertEquals(1L, telefoneResponseDTOTestList.get(0).getId());
+    assertEquals("1351417529", telefoneResponseDTOTestList.get(0).getNumero());
+
+    assertTrue(content.contains(
+      "\"_links\":{\"first\":{\"href\":\"http://localhost:8888/api/telefones?direction=ASC&page=0&size=10&sort=numero,asc\"}," +
+      "\"self\":{\"href\":\"http://localhost:8888/api/telefones?page=0&size=10&direction=ASC\"}," +
+      "\"next\":{\"href\":\"http://localhost:8888/api/telefones?direction=ASC&page=1&size=10&sort=numero,asc\"}," +
+      "\"last\":{\"href\":\"http://localhost:8888/api/telefones?direction=ASC&page=1&size=10&sort=numero,asc\"}}"
+    ));
+    assertTrue(content.contains("\"page\":{\"size\":10,\"totalElements\":11,\"totalPages\":2,\"number\":0}"));
   }
 
   private static void startTestEntities() {
