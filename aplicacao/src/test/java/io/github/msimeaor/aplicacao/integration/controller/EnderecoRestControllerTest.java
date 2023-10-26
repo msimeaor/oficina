@@ -34,6 +34,7 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
   private static ObjectMapper mapper;
   private static EnderecoRequestDTOTest enderecoRequestDTOTest;
   private static EnderecoRequestDTOTest enderecoRequestDTOTestWithPersonIdList;
+  private static EnderecoRequestDTOTest enderecoRequestDTOTestUpdated;
   private static EnderecoResponseDTOTest enderecoResponseDTOTest;
 
   @BeforeAll
@@ -191,6 +192,94 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
     assertTrue(content.contains("\"page\":{\"size\":10,\"totalElements\":12,\"totalPages\":2,\"number\":0}"));
   }
 
+  @Test
+  @Order(5)
+  public void updateWithoutAPersonList() throws JsonProcessingException {
+    var content =  given().spec(specification)
+            .basePath("/api/enderecos")
+            .body(enderecoRequestDTOTestUpdated)
+            .pathParam("id", 12L)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var enderecoResponseDTO = mapper.readValue(content, EnderecoResponseDTOTest.class);
+
+    assertNotNull(enderecoResponseDTO);
+    assertEquals(12L, enderecoResponseDTO.getId());
+    assertEquals("Park Way - Rua 12 Casa 1001", enderecoResponseDTO.getLogradouro());
+    assertEquals(UFs.DF, enderecoResponseDTO.getUf());
+
+    System.out.println(content);
+    /*
+    In this case, when updating a person that already has a person list with records, but we don't pass a new
+    person list in the request, the previous people are maintained.
+    */
+    assertTrue(content.contains("\"Morador(es)\":{\"href\":\"http://localhost:8888/api/pessoas/8\"}"));
+    assertTrue(content.contains("\"self\":{\"href\":\"http://localhost:8888/api/enderecos/12\"}"));
+  }
+
+  @Test
+  @Order(6)
+  public void updateWithANewPersonList() throws JsonProcessingException {
+    enderecoRequestDTOTestWithPersonIdList.setPessoasId(Collections.singletonList(9L));
+
+    var content = given().spec(specification)
+            .basePath("/api/enderecos")
+            .body(enderecoRequestDTOTestWithPersonIdList)
+            .pathParam("id", 12L)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var enderecoResponseDTO = mapper.readValue(content, EnderecoResponseDTOTest.class);
+
+    assertNotNull(enderecoResponseDTO);
+    assertEquals(12L, enderecoResponseDTO.getId());
+    assertEquals("QNP 15 Conjunto I", enderecoResponseDTO.getLogradouro());
+    assertEquals(UFs.DF, enderecoResponseDTO.getUf());
+
+    assertTrue(content.contains("\"self\":{\"href\":\"http://localhost:8888/api/enderecos/12\"}"));
+    /*
+    When I update the address by passing a new person list in the request, if the current address has a list of people
+    already filled in, the new person will be added, however the previous person it will not be removed
+    */
+    assertTrue(content.contains("" +
+            "\"Morador(es)\":[{\"href\":\"http://localhost:8888/api/pessoas/8\"}," +
+            "{\"href\":\"http://localhost:8888/api/pessoas/9\"}]"));
+  }
+
+  @Test
+  @Order(6)
+  public void updateWithAnInvalidAddressId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/enderecos")
+            .body(enderecoRequestDTOTestUpdated)
+            .pathParam("id", 13L)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    ExceptionResponse exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertNotNull(exceptionResponse);
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Endereço não encontrado! ID: 13", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/enderecos/13", exceptionResponse.getDetalhesErro());
+  }
+
   public static void startEntities() {
     enderecoRequestDTOTest = EnderecoRequestDTOTest.builder()
             .logradouro("Area Especial 2A Modulo E Lote 5")
@@ -202,6 +291,12 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
             .logradouro("QNP 15 Conjunto I")
             .uf(UFs.DF)
             .pessoasId(Collections.singletonList(8L))
+            .build();
+
+    enderecoRequestDTOTestUpdated = EnderecoRequestDTOTest.builder()
+            .logradouro("Park Way - Rua 12 Casa 1001")
+            .uf(UFs.DF)
+            .pessoasId(null)
             .build();
   }
 
