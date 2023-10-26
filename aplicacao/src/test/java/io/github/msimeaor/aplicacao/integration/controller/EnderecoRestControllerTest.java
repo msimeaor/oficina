@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.msimeaor.aplicacao.config.TestConfigs;
 import io.github.msimeaor.aplicacao.enums.UFs;
+import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.integration.dto.request.EnderecoRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.EnderecoResponseDTOTest;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
@@ -15,6 +16,7 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.util.Collections;
@@ -98,13 +100,62 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(12L, enderecoResponseDTO.getId());
     assertEquals("QNP 15 Conjunto I", enderecoResponseDTO.getLogradouro());
     assertEquals(UFs.DF, enderecoResponseDTO.getUf());
-
     /*
     Now, as we passed a person id to request, the response body will return this HATEOAS link containing
     this request path to Pessoa controller.
     */
     assertTrue(content.contains("\"Morador(es)\":{\"href\":\"http://localhost:8888/api/pessoas/8\"}"));
     assertTrue(content.contains("\"self\":{\"href\":\"http://localhost:8888/api/enderecos/12\"}"));
+  }
+
+  @Test
+  @Order(2)
+  public void findByIdWithAValidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/enderecos")
+            .pathParam("id", 12L)
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var enderecoResponseDTO = mapper.readValue(content, EnderecoResponseDTOTest.class);
+
+    assertNotNull(enderecoResponseDTO);
+    assertEquals(12L, enderecoResponseDTO.getId());
+    assertEquals("QNP 15 Conjunto I", enderecoResponseDTO.getLogradouro());
+    assertEquals(UFs.DF, enderecoResponseDTO.getUf());
+    /*
+    Now, as we passed a person id to request, the response body will return this HATEOAS link containing
+    this request path to Pessoa controller.
+    */
+    assertTrue(content.contains("\"Morador(es)\":{\"href\":\"http://localhost:8888/api/pessoas/8\"}"));
+    assertTrue(content.contains("\"self\":{\"href\":\"http://localhost:8888/api/enderecos/12\"}"));
+  }
+
+  @Test
+  @Order(3)
+  public void findByIdWithAnInvalidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/enderecos")
+            .pathParam("id", 13L)
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    ExceptionResponse exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertNotNull(exceptionResponse);
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Endereço não encontrado! ID: 13", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/enderecos/13", exceptionResponse.getDetalhesErro());
   }
 
   public static void startEntities() {
