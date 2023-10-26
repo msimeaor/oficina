@@ -213,7 +213,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
 
   @Test
   @Order(5)
-  public void updateWithoutEnderecoIdAndAValidPessoaId() throws JsonProcessingException {
+  public void updateWithoutEnderecoId() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath("/api/pessoas")
             .body(pessoaRequestDTOTestUpdated)
@@ -246,7 +246,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
 
   @Test
   @Order(6)
-  public void updateWithEnderecoIdAndAValidPessoaId() throws JsonProcessingException {
+  public void updateWithEnderecoId() throws JsonProcessingException {
     pessoaRequestDTOTestUpdated.setNome("FERDINANDO CORREIO");
     pessoaRequestDTOTestUpdated.setEnderecoId(1L);
 
@@ -274,7 +274,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
 
   @Test
   @Order(7)
-  public void updateWithEnderecoIdAndAnInvalidPessoaId() throws JsonProcessingException {
+  public void updateWithInvalidPessoaId() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath("/api/pessoas")
             .body(pessoaRequestDTOTestUpdated)
