@@ -42,7 +42,7 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
     mapper = new ObjectMapper();
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-    startEntities();
+    startTestEntities();
   }
 
   @Test
@@ -280,7 +280,7 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
     assertEquals("uri=/api/enderecos/13", exceptionResponse.getDetalhesErro());
   }
 
-  public static void startEntities() {
+  private static void startTestEntities() {
     enderecoRequestDTOTest = EnderecoRequestDTOTest.builder()
             .logradouro("Area Especial 2A Modulo E Lote 5")
             .uf(UFs.DF)

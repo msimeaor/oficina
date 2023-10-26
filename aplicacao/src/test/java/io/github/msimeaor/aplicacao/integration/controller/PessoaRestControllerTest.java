@@ -326,7 +326,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
             "\"page\":{\"size\":5,\"totalElements\":1,\"totalPages\":1,\"number\":0}"));
   }
 
-  public static void startTestEntities() {
+  private static void startTestEntities() {
     pessoaRequestDTOTest = PessoaRequestDTOTest.builder()
             .nome("MATHEUS SIMEAO")
             .cpf("000.000.000-00")
