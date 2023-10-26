@@ -1,4 +1,4 @@
-package io.github.msimeaor.aplicacao.integration.helper;
+package io.github.msimeaor.aplicacao.integration.helper.pessoa;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.msimeaor.aplicacao.integration.dto.response.PessoaResponseDTOTest;

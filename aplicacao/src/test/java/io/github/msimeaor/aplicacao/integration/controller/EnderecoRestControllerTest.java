@@ -8,6 +8,7 @@ import io.github.msimeaor.aplicacao.enums.UFs;
 import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.integration.dto.request.EnderecoRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.EnderecoResponseDTOTest;
+import io.github.msimeaor.aplicacao.integration.helper.endereco.EnderecoWrapper;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.util.Collections;
+import java.util.List;
 
 import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -156,6 +158,37 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
     assertEquals("Endereço não encontrado! ID: 13", exceptionResponse.getMensagemErro());
     assertEquals("uri=/api/enderecos/13", exceptionResponse.getDetalhesErro());
+  }
+
+  @Test
+  @Order(4)
+  public void findAll() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/enderecos")
+            .when()
+              .get()
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    EnderecoWrapper response = mapper.readValue(content, EnderecoWrapper.class);
+    List<EnderecoResponseDTOTest> enderecoResponseDTOTestList = response.getEnderecoEmbedded().getEnderecoResponseDTOList();
+
+    assertNotNull(enderecoResponseDTOTestList);
+    assertEquals(10, enderecoResponseDTOTestList.size());
+    assertEquals(1L, enderecoResponseDTOTestList.get(0).getId());
+    assertEquals("68643 Shopko Hill", enderecoResponseDTOTestList.get(0).getLogradouro());
+    assertEquals(UFs.DF, enderecoResponseDTOTestList.get(0).getUf());
+
+    assertTrue(content.contains(
+      "\"_links\":{\"first\":{\"href\":\"http://localhost:8888/api/enderecos?direction=ASC&page=0&size=10&sort=id,asc\"}" +
+      ",\"self\":{\"href\":\"http://localhost:8888/api/enderecos?page=0&size=10&direction=ASC\"}" +
+      ",\"next\":{\"href\":\"http://localhost:8888/api/enderecos?direction=ASC&page=1&size=10&sort=id,asc\"}" +
+      ",\"last\":{\"href\":\"http://localhost:8888/api/enderecos?direction=ASC&page=1&size=10&sort=id,asc\"}}"
+    ));
+    assertTrue(content.contains("\"page\":{\"size\":10,\"totalElements\":12,\"totalPages\":2,\"number\":0}"));
   }
 
   public static void startEntities() {

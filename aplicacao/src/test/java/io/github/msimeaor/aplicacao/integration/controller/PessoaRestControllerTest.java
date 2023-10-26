@@ -8,10 +8,9 @@ import io.github.msimeaor.aplicacao.enums.UFs;
 import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.integration.dto.request.PessoaRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.PessoaResponseDTOTest;
-import io.github.msimeaor.aplicacao.integration.helper.PessoaWrapper;
+import io.github.msimeaor.aplicacao.integration.helper.pessoa.PessoaWrapper;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
 import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
-import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
@@ -23,7 +22,6 @@ import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)

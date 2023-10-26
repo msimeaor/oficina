@@ -1,4 +1,4 @@
-package io.github.msimeaor.aplicacao.integration.helper;
+package io.github.msimeaor.aplicacao.integration.helper.endereco;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PessoaWrapper {
+public class EnderecoWrapper {
 
   @JsonProperty("_embedded")
-  private PessoaEmbedded pessoaEmbedded;
+  private EnderecoEmbedded enderecoEmbedded;
 
 }
