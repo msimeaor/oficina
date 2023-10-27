@@ -21,7 +21,7 @@ import org.springframework.http.MediaType;
 
 import java.util.List;
 
-import static io.restassured.RestAssured.*;
+import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -33,7 +33,6 @@ public class TelefoneRestControllerTest extends AbstractIntegrationTest {
   private static TelefoneRequestDTOTest telefoneRequestDTOTest;
   private static TelefoneRequestDTOTest telefoneRequestDTOTestWithAnInvalidId;
   private static TelefoneRequestDTOTest telefoneRequestDTOTestUpdated;
-  private static TelefoneResponseDTOTest telefoneResponseDTOTest;
 
   @BeforeAll
   public static void setup() {

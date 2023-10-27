@@ -23,7 +23,7 @@ import org.springframework.http.MediaType;
 import java.util.Collections;
 import java.util.List;
 
-import static io.restassured.RestAssured.*;
+import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -35,7 +35,6 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
   private static EnderecoRequestDTOTest enderecoRequestDTOTest;
   private static EnderecoRequestDTOTest enderecoRequestDTOTestWithPersonIdList;
   private static EnderecoRequestDTOTest enderecoRequestDTOTestUpdated;
-  private static EnderecoResponseDTOTest enderecoResponseDTOTest;
 
   @BeforeAll
   public static void setup() {
@@ -252,7 +251,7 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
     When I update the address by passing a new person list in the request, if the current address has a list of people
     already filled in, the new person will be added, however the previous person it will not be removed
     */
-    assertTrue(content.contains("" +
+    assertTrue(content.contains(
             "\"Morador(es)\":[{\"href\":\"http://localhost:8888/api/pessoas/8\"}," +
             "{\"href\":\"http://localhost:8888/api/pessoas/9\"}]"));
   }

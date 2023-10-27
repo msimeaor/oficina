@@ -82,7 +82,7 @@ class EnderecoServiceImplTest {
     assertEquals(UF, response.getBody().getUf());
 
     assertEquals("</api/enderecos/1>;rel=\"self\"", response.getBody().getLinks().toString());
-    // Não estou validando os links Hateoas de moradores que são gerados no EnderecoResponseDTO
+    // I am not validating the HATEOAS links of residents that are generated in the EnderecoResponseDTO
   }
 
   @Test
@@ -136,7 +136,7 @@ class EnderecoServiceImplTest {
     when(repository.save(any(Endereco.class))).thenReturn(endereco);
 
     var response = enderecoService.criarEnderecoESalvar(enderecoRequestDTO, Collections.singletonList(pessoa));
-    // Simulando o endereco.setPessoas do método
+    // Simulating the endereco.setPessoas of the method
     response.setPessoas(Collections.singletonList(pessoa));
 
     assertNotNull(response);
@@ -194,7 +194,7 @@ class EnderecoServiceImplTest {
     assertEquals(response.getBody().getClass(), EnderecoResponseDTO.class);
 
     assertEquals(ID ,response.getBody().getId());
-    // Não estamos testando os links Hateoas de moradores
+    // We are not testing the HATEOAS links of the residents.
     assertEquals("</api/enderecos/1>;rel=\"self\"", response.getBody().getLinks().toString());
   }
 
@@ -304,11 +304,11 @@ class EnderecoServiceImplTest {
   void whenCriarLinksHateoasPageEnderecoResponseDTOThenReturnSuccess() {
     enderecoService.criarLinksHateoasPageEnderecoResponseDTO(enderecoResponseDTOPage, enderecoPage);
 
-    /* A chamada do método pega todos os EnderecoResponseDTO passados nesse page e adiciona o link Hateoas Selfrel
-       para cada um deles.
-       O teste não está validando a criação dos links Hateoas de moradores
-     */
 
+    /*
+    The method call take all EnderecoResponseDTO passed in this page and added the Selfrel HATEOAS link for each one of them.
+    The residents HATEOAS link is not being validating
+    */
     enderecoResponseDTOPage.forEach(e -> {
       assertNotNull(e);
       assertEquals("</api/enderecos/1>;rel=\"self\"", e.getLinks().toString());
@@ -338,7 +338,7 @@ class EnderecoServiceImplTest {
     assertEquals(EnderecoResponseDTO.class, response.getBody().getClass());
 
     assertEquals(ID ,response.getBody().getId());
-    // Não estamos testando os links Hateoas de moradores
+    // We are not validating residents HATEOAS links
     assertEquals("</api/enderecos/1>;rel=\"self\"", response.getBody().getLinks().toString());
   }
 
@@ -350,7 +350,7 @@ class EnderecoServiceImplTest {
             Collections.singletonList(pessoa),
             ID);
 
-    // Simulando a linha do método que adiciona a lista de pessoa do parâmetro no endereco
+    // Simulating the method line that add a person list of the parameter in the address
     response.setPessoas(Collections.singletonList(pessoa));
 
     assertNotNull(response);

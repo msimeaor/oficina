@@ -18,11 +18,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import static io.restassured.RestAssured.*;
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.LocalDate;
 import java.util.List;
+
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -196,7 +196,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
     assertEquals(35, pessoaResponseDTOTestList.get(0).getId());
     assertEquals("Male", pessoaResponseDTOTestList.get(0).getSexo());
     assertEquals("Adolphus", pessoaResponseDTOTestList.get(0).getNome());
-    assertEquals(LocalDate.of(2023, 07, 30), pessoaResponseDTOTestList.get(0)
+    assertEquals(LocalDate.of(2023, 7, 30), pessoaResponseDTOTestList.get(0)
             .getDataNascimento());
     assertNull(pessoaResponseDTOTestList.get(0).getCpf());
 
@@ -316,7 +316,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
     assertEquals(35, pessoaResponseDTOTestList.get(0).getId());
     assertEquals("Male", pessoaResponseDTOTestList.get(0).getSexo());
     assertEquals("Adolphus", pessoaResponseDTOTestList.get(0).getNome());
-    assertEquals(LocalDate.of(2023, 07, 30), pessoaResponseDTOTestList.get(0)
+    assertEquals(LocalDate.of(2023, 7, 30), pessoaResponseDTOTestList.get(0)
             .getDataNascimento());
     assertNull(pessoaResponseDTOTestList.get(0).getCpf());
 
@@ -332,7 +332,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
             .cpf("000.000.000-00")
             .sexo("MASCULINO")
             .email("maatsimeao@gmail.com")
-            .dataNascimento(LocalDate.of(2002, 05, 11))
+            .dataNascimento(LocalDate.of(2002, 5, 11))
             .build();
 
     pessoaRequestDTOTestWithPessoaId = PessoaRequestDTOTest.builder()
@@ -340,7 +340,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
             .cpf("999.999.999-99")
             .sexo("FEMININO")
             .email("rogeriomaduro@gmail.com")
-            .dataNascimento(LocalDate.of(2002, 05, 11))
+            .dataNascimento(LocalDate.of(2002, 5, 11))
             .enderecoId(1L)
             .build();
 
@@ -349,7 +349,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
             .cpf("123.456.789-10")
             .sexo("FEMININO")
             .email("franciscovieira@gmail.com")
-            .dataNascimento(LocalDate.of(2004, 03, 12))
+            .dataNascimento(LocalDate.of(2004, 3, 12))
             .build();
   }
 
