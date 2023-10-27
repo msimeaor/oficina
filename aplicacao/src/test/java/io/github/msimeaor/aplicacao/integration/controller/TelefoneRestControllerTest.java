@@ -32,6 +32,7 @@ public class TelefoneRestControllerTest extends AbstractIntegrationTest {
   private static ObjectMapper mapper;
   private static TelefoneRequestDTOTest telefoneRequestDTOTest;
   private static TelefoneRequestDTOTest telefoneRequestDTOTestWithAnInvalidId;
+  private static TelefoneRequestDTOTest telefoneRequestDTOTestUpdated;
   private static TelefoneResponseDTOTest telefoneResponseDTOTest;
 
   @BeforeAll
@@ -175,6 +176,58 @@ public class TelefoneRestControllerTest extends AbstractIntegrationTest {
     assertTrue(content.contains("\"page\":{\"size\":10,\"totalElements\":11,\"totalPages\":2,\"number\":0}"));
   }
 
+  @Test
+  @Order(5)
+  public void updateWithAValidPersonIDAndValidPhoneID() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/telefones")
+            .body(telefoneRequestDTOTestUpdated)
+            .pathParam("id", 11L)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var telefoneResponseDTO = mapper.readValue(content, TelefoneResponseDTOTest.class);
+
+    assertNotNull(telefoneResponseDTO);
+    assertEquals(11L, telefoneResponseDTO.getId());
+    assertEquals("99999999999", telefoneResponseDTO.getNumero());
+
+    assertTrue(content.contains("\"self\":{\"href\":\"http://localhost:8888/api/telefones/11\"}"));
+    /*
+    When passing the object in request, we changed the person who owned of this phone. Now, the new owner is referenced
+    in this HATEOAS link.
+    */
+    assertTrue(content.contains("Proprietário\":{\"href\":\"http://localhost:8888/api/pessoas/41\"}"));
+  }
+
+  @Test
+  @Order(6)
+  public void updateWithAnInvalidTelefoneId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/telefones")
+            .body(telefoneRequestDTOTest)
+            .pathParam("id", 100L)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    ExceptionResponse exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertNotNull(exceptionResponse);
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Telefone não encontrado! ID: 100", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/telefones/100", exceptionResponse.getDetalhesErro());
+  }
+
   private static void startTestEntities() {
     telefoneRequestDTOTest = TelefoneRequestDTOTest.builder()
             .numero("61991979110")
@@ -186,6 +239,11 @@ public class TelefoneRestControllerTest extends AbstractIntegrationTest {
             .numero("00000000000")
             // Invalid ID in database
             .pessoaId(100L)
+            .build();
+
+    telefoneRequestDTOTestUpdated = TelefoneRequestDTOTest.builder()
+            .numero("99999999999")
+            .pessoaId(41L)
             .build();
   }
 
