@@ -175,6 +175,10 @@ public class EnderecoServiceImpl implements EnderecoService {
   protected Endereco atualizarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas , Long id) {
     Endereco endereco = DozerMapper.parseObject(enderecoRequestDTO, Endereco.class);
     endereco.setId(id);
+    if (enderecoRequestDTO.getPessoasId() != null) {
+      List<Pessoa> novasPessoas = criarListaPessoaPorId(enderecoRequestDTO.getPessoasId());
+      pessoas.addAll(novasPessoas);
+    }
     endereco.setPessoas(pessoas);
     return repository.save(endereco);
   }

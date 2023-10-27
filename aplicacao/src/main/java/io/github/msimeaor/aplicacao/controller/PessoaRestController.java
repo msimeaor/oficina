@@ -33,7 +33,7 @@ public class PessoaRestController {
     this.service = service;
   }
 
-  @PostMapping
+  @PostMapping("/{placa}")
   @Operation(summary = "Save a person in database", description = "Save a person in database",
     tags = {"Save"},
     responses = {
@@ -61,7 +61,7 @@ public class PessoaRestController {
   )
   public ResponseEntity<PessoaResponseDTO> save(
           @RequestBody @Valid PessoaRequestDTO pessoaRequest,
-          @RequestParam(name = "placa", required = true) String placa
+          @PathVariable(name = "placa") String placa
   ) {
     return service.save( pessoaRequest, placa );
   }

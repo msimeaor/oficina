@@ -1,0 +1,14 @@
+server:
+  port: 8888
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jooq:
+    sql-dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+  jpa:
+    hibernate:
+      ddl-auto: none
+springdoc:
+  paths-to-match: /api/**/**
+  swagger-ui:
+    use-root-path: true
