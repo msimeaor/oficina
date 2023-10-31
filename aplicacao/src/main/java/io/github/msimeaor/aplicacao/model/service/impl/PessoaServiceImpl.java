@@ -17,6 +17,7 @@ import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
 import jakarta.transaction.Transactional;
+import jdk.swing.interop.SwingInterOpUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -170,11 +171,17 @@ public class PessoaServiceImpl {
 
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNomeLike( String nome, Pageable pageable ) {
     Page<Pessoa> pessoaPage = repository.findByNomeLike("%" + nome + "%", pageable);
+    validarPageSize(pessoaPage);
     Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoaPage);
     pessoaResponseDTOS.forEach(this::criarLinksHateoasDePessoaResponseDTO);
     Link link = criarLinkHateoasNavegacaoPorPaginas(pageable);
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
+  }
+
+  protected void validarPageSize(Page<Pessoa> pessoaPage) {
+    if (pessoaPage.isEmpty())
+      throw new EmptyListException("Não existem clientes cadastrados que tenham esse nome!");
   }
 
   protected Page<Pessoa> criarPagePessoaComFindByNomeLike(String nome, Pageable pageable) {

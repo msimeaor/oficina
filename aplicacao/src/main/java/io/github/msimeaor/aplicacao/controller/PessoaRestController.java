@@ -164,7 +164,7 @@ public class PessoaRestController {
     return service.update(pessoaRequest, id);
   }
 
-  @GetMapping("/findByNome")
+  @GetMapping("/findByNome/{nome}")
   @Operation(summary = "Find a person in database by part of their name",
     description = "Find a person in database by part of their name",
     tags = {"Find"},
@@ -192,7 +192,7 @@ public class PessoaRestController {
     }
   )
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNome(
-          @RequestParam(name = "nome", defaultValue = "") String nome,
+          @PathVariable(name = "nome") String nome,
           @RequestParam(name = "page", defaultValue = "0") Integer page,
           @RequestParam(name = "size", defaultValue = "5") Integer size,
           @RequestParam(name = "direction", defaultValue = "ASC") String direction
