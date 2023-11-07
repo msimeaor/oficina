@@ -28,7 +28,10 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -349,6 +352,32 @@ class TelefoneServiceImplTest {
     assertEquals(Telefone.class, response.getClass());
     assertEquals(ID, response.getId());
     assertEquals(pessoa.getId(), response.getPessoa().getId());
+  }
+
+  @Test
+  void whenFindByNumeroThenReturnAnTelefone() {
+    when(repository.findByNumero(anyString())).thenReturn(telefone);
+
+    var response = telefoneService.findByNumero(NUMERO);
+
+    assertNotNull(response);
+    assertEquals(TelefoneResponseDTO.class, response.getBody().getClass());
+    assertEquals(ID, response.getBody().getId());
+    assertEquals(NUMERO, response.getBody().getNumero());
+  }
+
+  @Test
+  void whenFindByNumeroThenThrowTelefoneNotFoundException() {
+    when(repository.findByNumero(anyString())).thenReturn(null);
+
+    try {
+      telefoneService.findByNumero("00001010110");
+
+    } catch (Exception ex) {
+      assertNotNull(ex);
+      assertEquals(TelefoneNotFoundException.class, ex.getClass());
+      assertEquals("Telefone não encontrado! Numero: 00001010110", ex.getMessage());
+    }
   }
 
   public void initializeTestsEntities() {

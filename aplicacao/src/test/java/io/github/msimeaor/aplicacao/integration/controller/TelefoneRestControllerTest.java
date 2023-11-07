@@ -9,6 +9,7 @@ import io.github.msimeaor.aplicacao.integration.dto.request.TelefoneRequestDTOTe
 import io.github.msimeaor.aplicacao.integration.dto.response.TelefoneResponseDTOTest;
 import io.github.msimeaor.aplicacao.integration.helper.telefone.TelefoneWrapper;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
+import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
@@ -225,6 +226,55 @@ public class TelefoneRestControllerTest extends AbstractIntegrationTest {
     assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
     assertEquals("Telefone não encontrado! ID: 100", exceptionResponse.getMensagemErro());
     assertEquals("uri=/api/telefones/100", exceptionResponse.getDetalhesErro());
+  }
+
+  @Test
+  @Order(7)
+  public void findByNumeroWithAValidNumero() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/telefones/findByNumero")
+            .pathParam("numero", "1351417529")
+            .when()
+              .get("{numero}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var telefoneResponseDTO = mapper.readValue(content, TelefoneResponseDTO.class);
+
+    assertNotNull(telefoneResponseDTO);
+    assertEquals(TelefoneResponseDTO.class, telefoneResponseDTO.getClass());
+    assertEquals(1L, telefoneResponseDTO.getId());
+    assertEquals("1351417529", telefoneResponseDTO.getNumero());
+
+    assertTrue(content.contains("\"_links\":{\"self\":{\"href\":\"http://localhost:8888/api/telefones/1\"}"));
+    // In migration, this record have a relationship with the person that contains the ID 8
+    assertTrue(content.contains("\"Proprietário\":{\"href\":\"http://localhost:8888/api/pessoas/8\"}"));
+  }
+
+  @Test
+  @Order(8)
+  public void findByNumeroWithAnInvalidNumero() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/telefones/findByNumero")
+            // Wrong number
+            .pathParam("numero", "1092889201")
+            .when()
+              .get("{numero}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    ExceptionResponse exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertNotNull(exceptionResponse);
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Telefone não encontrado! Numero: 1092889201", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/telefones/findByNumero/1092889201", exceptionResponse.getDetalhesErro());
   }
 
   private static void startTestEntities() {
