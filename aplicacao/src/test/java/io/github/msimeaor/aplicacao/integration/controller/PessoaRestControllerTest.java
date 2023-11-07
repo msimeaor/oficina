@@ -299,9 +299,9 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
   public void findByNome() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath("/api/pessoas/findByNome")
-            .param("nome", "adol")
+            .pathParam("nome", "adol")
             .when()
-              .get()
+              .get("{nome}")
             .then()
               .statusCode(200)
             .extract()

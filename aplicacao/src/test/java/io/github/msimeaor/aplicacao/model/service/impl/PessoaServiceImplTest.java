@@ -351,6 +351,17 @@ class PessoaServiceImplTest {
 
   }
 
+  @Test
+  void whenValidarPageSizeThenThrowEmptyListException() {
+    try {
+      pessoaService.validarPageSize(Page.empty());
+    } catch (Exception ex) {
+      assertNotNull(ex);
+      assertEquals(EmptyListException.class, ex.getClass());
+      assertEquals("Não existem clientes cadastrados que tenham esse nome!", ex.getMessage());
+    }
+  }
+
   public void initializeTestsEntities() {
     pessoaRequestDTO = PessoaRequestDTO.builder()
             .nome(NOME)
