@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 public interface EnderecoService {
 
   ResponseEntity<EnderecoResponseDTO> save( EnderecoRequestDTO enderecoRequest );
+  ResponseEntity<EnderecoResponseDTO> findById(Long id);
   ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findAll( Pageable pageable );
   ResponseEntity<EnderecoResponseDTO> update( EnderecoRequestDTO enderecoRequest, Long id );
 
