@@ -177,6 +177,31 @@ public class TelefoneRestController {
     return service.update(telefoneRequest, id);
   }
 
+  @Operation(summary = "Find phone by phone number", description = "Find phone by phone number",
+    tags = {"Find"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "200",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = TelefoneResponseDTO.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Phone Not Found", responseCode = "404",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   @GetMapping("/findByNumero/{numero}")
   public ResponseEntity<TelefoneResponseDTO> findByNumero(@PathVariable("numero") String numero) {
     return service.findByNumero(numero);
