@@ -174,4 +174,20 @@ public class TelefoneServiceImpl implements TelefoneService {
     return repository.save(telefone);
   }
 
+  public ResponseEntity<TelefoneResponseDTO> findByNumero(String numero) {
+    Telefone telefone = buscarTelefonePorNumero(numero);
+    TelefoneResponseDTO telefoneResponseDTO = criarTelefoneResponseDTO(telefone);
+    criarLinksHateoasSelfRelEProprietario(telefoneResponseDTO, telefone);
+
+    return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.OK);
+  }
+
+  protected Telefone buscarTelefonePorNumero(String numero) {
+    Telefone telefone = repository.findByNumero(numero);
+    if (telefone == null)
+      throw new TelefoneNotFoundException("Telefone não encontrado! Numero: " + numero);
+
+    return telefone;
+  }
+
 }

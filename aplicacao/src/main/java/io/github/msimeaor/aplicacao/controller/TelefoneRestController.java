@@ -177,4 +177,9 @@ public class TelefoneRestController {
     return service.update(telefoneRequest, id);
   }
 
+  @GetMapping("/findByNumero/{numero}")
+  public ResponseEntity<TelefoneResponseDTO> findByNumero(@PathVariable("numero") String numero) {
+    return service.findByNumero(numero);
+  }
+
 }

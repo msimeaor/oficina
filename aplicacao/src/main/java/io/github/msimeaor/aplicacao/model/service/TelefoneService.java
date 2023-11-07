@@ -13,5 +13,6 @@ public interface TelefoneService {
   ResponseEntity<TelefoneResponseDTO> findById( Long id );
   ResponseEntity<PagedModel<EntityModel<TelefoneResponseDTO>>> findAll( Pageable pageable );
   ResponseEntity<TelefoneResponseDTO> update( TelefoneRequestDTO telefoneRequest, Long id );
+  ResponseEntity<TelefoneResponseDTO> findByNumero( String numero );
 
 }
