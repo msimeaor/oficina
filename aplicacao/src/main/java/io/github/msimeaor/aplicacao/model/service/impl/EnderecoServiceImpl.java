@@ -177,10 +177,15 @@ public class EnderecoServiceImpl implements EnderecoService {
     endereco.setId(id);
     if (enderecoRequestDTO.getPessoasId() != null) {
       List<Pessoa> novasPessoas = criarListaPessoaPorId(enderecoRequestDTO.getPessoasId());
+      setarEnderecoDasPessoas(novasPessoas, endereco);
       pessoas.addAll(novasPessoas);
     }
     endereco.setPessoas(pessoas);
     return repository.save(endereco);
+  }
+
+  protected void setarEnderecoDasPessoas(List<Pessoa> pessoas, Endereco endereco) {
+    pessoas.forEach(pessoa -> pessoa.setEndereco(endereco));
   }
 
 }
