@@ -31,7 +31,6 @@ public class EnderecoRestController {
       this.service = service;
   }
 
-  @PostMapping
   @Operation(summary = "Save an address in database", description = "Save an address in database",
     tags = {"Save"},
     responses = {
@@ -57,11 +56,11 @@ public class EnderecoRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @PostMapping
   public ResponseEntity<EnderecoResponseDTO> save( @RequestBody @Valid EnderecoRequestDTO enderecoRequest ) {
     return service.save(enderecoRequest);
   }
 
-  @GetMapping("/{id}")
   @Operation(summary = "Find an address in database by ID", description = "Find an address in database by ID",
     tags = {"Find"},
     responses = {
@@ -87,11 +86,11 @@ public class EnderecoRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @GetMapping("/{id}")
   public ResponseEntity<EnderecoResponseDTO> findById( @PathVariable("id") Long id ) {
     return service.findById(id);
   }
 
-  @GetMapping
   @Operation(summary = "Find all address in database", description = "Find all address in database",
     tags = {"Find"},
     responses = {
@@ -117,6 +116,7 @@ public class EnderecoRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @GetMapping
   public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findAll(
           @RequestParam(name = "page", defaultValue = "0") Integer page,
           @RequestParam(name = "size", defaultValue = "10") Integer size,
@@ -129,7 +129,6 @@ public class EnderecoRestController {
     return service.findAll(pageable);
   }
 
-  @PutMapping("/{id}")
   @Operation(summary = "Update an address in database", description = "Update an address in database",
     tags = {"Update"},
     responses = {
@@ -163,6 +162,7 @@ public class EnderecoRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @PutMapping("/{id}")
   public ResponseEntity<EnderecoResponseDTO> update( @RequestBody @Valid EnderecoRequestDTO enderecoRequest,
                                                      @PathVariable("id") Long id ) {
 
@@ -170,6 +170,31 @@ public class EnderecoRestController {
 
   }
 
+  @Operation(summary = "Find an address by logradouro", description = "Find an address by logradouro",
+    tags = {"Find"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "200",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            array = @ArraySchema(schema = @Schema(implementation = EnderecoResponseDTO.class))
+          )
+        }
+      ),
+      @ApiResponse(description = "Address Not Found", responseCode = "404",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   @GetMapping("/findByLogradouro/{logradouro}")
   public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findByLogradouro(
           @PathVariable(name = "logradouro") String logradouro,
