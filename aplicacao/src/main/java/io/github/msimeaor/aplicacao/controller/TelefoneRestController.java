@@ -31,7 +31,6 @@ public class TelefoneRestController {
     this.service = service;
   }
 
-  @PostMapping
   @Operation(summary = "Save a phone in database", description = "Save a phone in database",
     tags = {"Save"},
     responses = {
@@ -65,11 +64,11 @@ public class TelefoneRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @PostMapping
   public ResponseEntity<TelefoneResponseDTO> save( @RequestBody @Valid TelefoneRequestDTO telefoneRequest ) {
     return service.save(telefoneRequest);
   }
 
-  @GetMapping("/{id}")
   @Operation(summary = "Find a phone in database by ID", description = "Find a phone in database by ID",
     tags = {"Find"},
     responses = {
@@ -95,11 +94,11 @@ public class TelefoneRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @GetMapping("/{id}")
   public ResponseEntity<TelefoneResponseDTO> findById( @PathVariable("id") Long id ) {
     return service.findById(id);
   }
 
-  @GetMapping
   @Operation(summary = "Find all phones in database", description = "Find all phones in database",
     tags = {"Find"},
     responses = {
@@ -125,6 +124,7 @@ public class TelefoneRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @GetMapping
   public ResponseEntity<PagedModel<EntityModel<TelefoneResponseDTO>>> findAll(
           @RequestParam(name = "page", defaultValue = "0") Integer page,
           @RequestParam(name = "size", defaultValue = "10") Integer size,
@@ -137,7 +137,6 @@ public class TelefoneRestController {
     return service.findAll(pageable);
   }
 
-  @PutMapping("/{id}")
   @Operation(summary = "Update a phone in database", description = "Update a phone in database",
     tags = {"Update"},
     responses = {
@@ -171,6 +170,7 @@ public class TelefoneRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @PutMapping("/{id}")
   public ResponseEntity<TelefoneResponseDTO> update( @RequestBody @Valid TelefoneRequestDTO telefoneRequest,
                                                      @PathVariable("id") Long id) {
 

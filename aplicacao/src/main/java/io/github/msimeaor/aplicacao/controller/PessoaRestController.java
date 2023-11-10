@@ -1,7 +1,6 @@
 package io.github.msimeaor.aplicacao.controller;
 
 import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
-import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.service.impl.PessoaServiceImpl;
@@ -10,7 +9,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
@@ -33,7 +31,6 @@ public class PessoaRestController {
     this.service = service;
   }
 
-  @PostMapping("/{placa}")
   @Operation(summary = "Save a person in database", description = "Save a person in database",
     tags = {"Save"},
     responses = {
@@ -59,6 +56,7 @@ public class PessoaRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @PostMapping("/{placa}")
   public ResponseEntity<PessoaResponseDTO> save(
           @RequestBody @Valid PessoaRequestDTO pessoaRequest,
           @PathVariable(name = "placa") String placa
@@ -66,7 +64,6 @@ public class PessoaRestController {
     return service.save( pessoaRequest, placa );
   }
 
-  @GetMapping("/{id}")
   @Operation(summary = "Find a person in database by ID", description = "Find a person in database by ID",
     tags = {"Find"},
     responses = {
@@ -92,11 +89,11 @@ public class PessoaRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @GetMapping("/{id}")
   public ResponseEntity<PessoaResponseDTO> findById( @PathVariable("id") Long id ) {
     return service.findById( id );
   }
 
-  @GetMapping
   @Operation(summary = "Find all people in database", description = "Find all people in database",
     tags = {"Find"},
     responses = {
@@ -122,6 +119,7 @@ public class PessoaRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @GetMapping
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll(
           @RequestParam(name = "page", defaultValue = "0") Integer page,
           @RequestParam(name = "size", defaultValue = "10") Integer size,
@@ -133,7 +131,6 @@ public class PessoaRestController {
     return service.findAll( pageable );
   }
 
-  @PutMapping("/{id}")
   @Operation(summary = "Update a person in database", description = "Update a person in database",
     tags = {"Update"},
     responses = {
@@ -159,12 +156,12 @@ public class PessoaRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @PutMapping("/{id}")
   public ResponseEntity<PessoaResponseDTO> update( @RequestBody @Valid PessoaRequestDTO pessoaRequest,
                                                    @PathVariable Long id ) {
     return service.update(pessoaRequest, id);
   }
 
-  @GetMapping("/findByNome/{nome}")
   @Operation(summary = "Find a person in database by part of their name",
     description = "Find a person in database by part of their name",
     tags = {"Find"},
@@ -191,6 +188,7 @@ public class PessoaRestController {
       @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
     }
   )
+  @GetMapping("/findByNome/{nome}")
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNome(
           @PathVariable(name = "nome") String nome,
           @RequestParam(name = "page", defaultValue = "0") Integer page,
