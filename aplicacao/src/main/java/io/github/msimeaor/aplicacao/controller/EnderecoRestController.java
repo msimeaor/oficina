@@ -170,4 +170,18 @@ public class EnderecoRestController {
 
   }
 
+  @GetMapping("/findByLogradouro/{logradouro}")
+  public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findByLogradouro(
+          @PathVariable(name = "logradouro") String logradouro,
+          @RequestParam(name = "page", defaultValue = "0") Integer page,
+          @RequestParam(name = "size", defaultValue = "10") Integer size,
+          @RequestParam(name = "direction", defaultValue = "ASC") String direction
+  ) {
+
+    var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, "logradouro"));
+
+    return service.findByLogradouro(logradouro, pageable);
+  }
+
 }

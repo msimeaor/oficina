@@ -13,5 +13,6 @@ public interface EnderecoService {
   ResponseEntity<EnderecoResponseDTO> findById(Long id);
   ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findAll( Pageable pageable );
   ResponseEntity<EnderecoResponseDTO> update( EnderecoRequestDTO enderecoRequest, Long id );
+  ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findByLogradouro(String logradouro, Pageable pageable);
 
 }

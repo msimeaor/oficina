@@ -188,4 +188,26 @@ public class EnderecoServiceImpl implements EnderecoService {
     pessoas.forEach(pessoa -> pessoa.setEndereco(endereco));
   }
 
+  public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findByLogradouro(String logradouro,
+                                                                                       Pageable pageable) {
+
+    Page<Endereco> enderecoPage = criarPageEnderecoPorLogradouro(logradouro, pageable);
+    Page<EnderecoResponseDTO> enderecoResponseDTOS = converterPageEnderecoEmPageEnderecoResponseDTO(enderecoPage);
+    criarLinksHateoasPageEnderecoResponseDTO(enderecoResponseDTOS, enderecoPage);
+    Link link = criarLinkHateoasNavegacaoEntrePaginas(pageable);
+
+    return new ResponseEntity<>(assembler.toModel(enderecoResponseDTOS, link), HttpStatus.OK);
+  }
+
+  protected Page<Endereco> criarPageEnderecoPorLogradouro(String logradouro, Pageable pageable) {
+    logradouro = "%" + logradouro + "%";
+    Page<Endereco> enderecoPage = repository.findByLogradouro(logradouro, pageable);
+
+    if (enderecoPage.isEmpty()) {
+      throw new EmptyListException("Não existem endereços cadastrados com este logradouro!");
+    }
+
+    return enderecoPage;
+  }
+
 }
