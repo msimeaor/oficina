@@ -11,6 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
   @Value("${cors.originPatterns}")
   private String corsOriginPatterns = "";
 
+  // TODO Create unit and integration tests for CORS settings
   @Override
   public void addCorsMappings(CorsRegistry registry) {
     var allowedOrigins = corsOriginPatterns.split(",");
