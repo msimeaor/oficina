@@ -183,16 +183,45 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(UFs.DF, enderecoResponseDTOTestList.get(0).getUf());
 
     assertTrue(content.contains(
-      "\"_links\":{\"first\":{\"href\":\"http://localhost:8888/api/enderecos?direction=ASC&page=0&size=10&sort=id,asc\"}" +
-      ",\"self\":{\"href\":\"http://localhost:8888/api/enderecos?page=0&size=10&direction=ASC\"}" +
-      ",\"next\":{\"href\":\"http://localhost:8888/api/enderecos?direction=ASC&page=1&size=10&sort=id,asc\"}" +
-      ",\"last\":{\"href\":\"http://localhost:8888/api/enderecos?direction=ASC&page=1&size=10&sort=id,asc\"}}"
-    ));
+          "{\"first\":{\"href\":\"http://localhost:8888/api/enderecos?page=0&size=10&sort=id,asc\"}," +
+          "\"self\":{\"href\":\"http://localhost:8888/api/enderecos{?page,size,direction}\",\"templated\":true}," +
+          "\"next\":{\"href\":\"http://localhost:8888/api/enderecos?page=1&size=10&sort=id,asc\"}," +
+          "\"last\":{\"href\":\"http://localhost:8888/api/enderecos?page=1&size=10&sort=id,asc\"}}"));
     assertTrue(content.contains("\"page\":{\"size\":10,\"totalElements\":12,\"totalPages\":2,\"number\":0}"));
   }
 
   @Test
   @Order(5)
+  public void findByLogradouro() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/enderecos/findByLogradouro")
+            .pathParam("logradouro", "A")
+            .when()
+              .get("{logradouro}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    EnderecoWrapper response = mapper.readValue(content, EnderecoWrapper.class);
+    List<EnderecoResponseDTOTest> enderecoResponseDTOTestList = response.getEnderecoEmbedded().getEnderecoResponseDTOList();
+
+    assertNotNull(enderecoResponseDTOTestList);
+    assertEquals(10, enderecoResponseDTOTestList.size());
+    assertEquals(10, enderecoResponseDTOTestList.get(0).getId());
+    assertEquals("1 Spenser Park", enderecoResponseDTOTestList.get(0).getLogradouro());
+    assertEquals(UFs.DF, enderecoResponseDTOTestList.get(0).getUf());
+
+    System.out.println(content);
+    assertTrue(content.contains(
+            "{\"self\":{\"href\":\"http://localhost:8888/api/enderecos/findByLogradouro/A{?page,size,direction}\",\"templated\":true}}"));
+    assertTrue(content.contains(
+            "\"page\":{\"size\":10,\"totalElements\":10,\"totalPages\":1,\"number\":0}"));
+  }
+
+  @Test
+  @Order(6)
   public void updateWithoutAPersonList() throws JsonProcessingException {
     var content =  given().spec(specification)
             .basePath("/api/enderecos")
@@ -223,7 +252,7 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @Order(6)
+  @Order(7)
   public void updateWithANewPersonList() throws JsonProcessingException {
     enderecoRequestDTOTestWithPersonIdList.setPessoasId(Collections.singletonList(9L));
 
@@ -257,7 +286,7 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @Order(6)
+  @Order(8)
   public void updateWithAnInvalidAddressId() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath("/api/enderecos")

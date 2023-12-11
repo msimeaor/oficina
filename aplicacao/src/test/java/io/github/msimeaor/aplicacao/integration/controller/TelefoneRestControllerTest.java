@@ -167,11 +167,12 @@ public class TelefoneRestControllerTest extends AbstractIntegrationTest {
     assertEquals(1L, telefoneResponseDTOTestList.get(0).getId());
     assertEquals("1351417529", telefoneResponseDTOTestList.get(0).getNumero());
 
+    System.out.println(content);
     assertTrue(content.contains(
-      "\"_links\":{\"first\":{\"href\":\"http://localhost:8888/api/telefones?direction=ASC&page=0&size=10&sort=numero,asc\"}," +
-      "\"self\":{\"href\":\"http://localhost:8888/api/telefones?page=0&size=10&direction=ASC\"}," +
-      "\"next\":{\"href\":\"http://localhost:8888/api/telefones?direction=ASC&page=1&size=10&sort=numero,asc\"}," +
-      "\"last\":{\"href\":\"http://localhost:8888/api/telefones?direction=ASC&page=1&size=10&sort=numero,asc\"}}"
+      "\"_links\":{\"first\":{\"href\":\"http://localhost:8888/api/telefones?page=0&size=10&sort=numero,asc\"}," +
+      "\"self\":{\"href\":\"http://localhost:8888/api/telefones{?page,size,direction}\",\"templated\":true}," +
+      "\"next\":{\"href\":\"http://localhost:8888/api/telefones?page=1&size=10&sort=numero,asc\"}," +
+      "\"last\":{\"href\":\"http://localhost:8888/api/telefones?page=1&size=10&sort=numero,asc\"}}"
     ));
     assertTrue(content.contains("\"page\":{\"size\":10,\"totalElements\":11,\"totalPages\":2,\"number\":0}"));
   }

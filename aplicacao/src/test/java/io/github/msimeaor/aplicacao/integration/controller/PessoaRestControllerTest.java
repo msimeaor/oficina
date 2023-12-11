@@ -201,10 +201,10 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
     assertNull(pessoaResponseDTOTestList.get(0).getCpf());
 
     assertTrue(content.contains(
-      "\"_links\":{\"first\":{\"href\":\"http://localhost:8888/api/pessoas?direction=ASC&page=0&size=10&sort=nome,asc\"}," +
-      "\"self\":{\"href\":\"http://localhost:8888/api/pessoas?page=0&size=10&direction=ASC\"}," +
-      "\"next\":{\"href\":\"http://localhost:8888/api/pessoas?direction=ASC&page=1&size=10&sort=nome,asc\"}," +
-      "\"last\":{\"href\":\"http://localhost:8888/api/pessoas?direction=ASC&page=4&size=10&sort=nome,asc\"}}"));
+            "{\"first\":{\"href\":\"http://localhost:8888/api/pessoas?page=0&size=10&sort=nome,asc\"}," +
+            "\"self\":{\"href\":\"http://localhost:8888/api/pessoas{?page,size,direction}\",\"templated\":true}," +
+            "\"next\":{\"href\":\"http://localhost:8888/api/pessoas?page=1&size=10&sort=nome,asc\"}," +
+            "\"last\":{\"href\":\"http://localhost:8888/api/pessoas?page=4&size=10&sort=nome,asc\"}}"));
     assertTrue(content.contains(
             "\"page\":{\"size\":10,\"totalElements\":45,\"totalPages\":5,\"number\":0}"));
   }
@@ -299,7 +299,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
   public void findByNome() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath("/api/pessoas/findByNome")
-            .pathParam("nome", "adol")
+            .pathParam("nome", "A")
             .when()
               .get("{nome}")
             .then()
@@ -312,7 +312,7 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
     List<PessoaResponseDTOTest> pessoaResponseDTOTestList = response.getPessoaEmbedded().getPessoaResponseDTOList();
 
     assertNotNull(pessoaResponseDTOTestList);
-    assertEquals(1, pessoaResponseDTOTestList.size());
+    assertEquals(5, pessoaResponseDTOTestList.size());
     assertEquals(35, pessoaResponseDTOTestList.get(0).getId());
     assertEquals("Male", pessoaResponseDTOTestList.get(0).getSexo());
     assertEquals("Adolphus", pessoaResponseDTOTestList.get(0).getNome());
@@ -320,10 +320,14 @@ public class PessoaRestControllerTest extends AbstractIntegrationTest {
             .getDataNascimento());
     assertNull(pessoaResponseDTOTestList.get(0).getCpf());
 
+    System.out.println(content);
     assertTrue(content.contains(
-            "\"_links\":{\"self\":{\"href\":\"http://localhost:8888/api/pessoas?page=0&size=5&direction=ASC\"}}"));
+          "{\"first\":{\"href\":\"http://localhost:8888/api/pessoas/findByNome/A?page=0&size=5&sort=nome,asc\"}," +
+          "\"self\":{\"href\":\"http://localhost:8888/api/pessoas/findByNome/A{?page,size,direction}\",\"templated\":true}," +
+          "\"next\":{\"href\":\"http://localhost:8888/api/pessoas/findByNome/A?page=1&size=5&sort=nome,asc\"}," +
+          "\"last\":{\"href\":\"http://localhost:8888/api/pessoas/findByNome/A?page=4&size=5&sort=nome,asc\"}}"));
     assertTrue(content.contains(
-            "\"page\":{\"size\":5,\"totalElements\":1,\"totalPages\":1,\"number\":0}"));
+            "\"page\":{\"size\":5,\"totalElements\":22,\"totalPages\":5,\"number\":0}"));
   }
 
   private static void startTestEntities() {
