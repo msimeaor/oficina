@@ -1,23 +1,19 @@
 package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
-import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
-import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
-import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
-import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
-import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
-import io.github.msimeaor.aplicacao.model.entity.Telefone;
-import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
+import io.github.msimeaor.aplicacao.model.service.utilities.EnderecoUtilitiesService;
+import io.github.msimeaor.aplicacao.model.service.utilities.PessoaUtilitiesService;
+import io.github.msimeaor.aplicacao.model.service.utilities.TelefoneUtilitiesService;
+import io.github.msimeaor.aplicacao.model.utilities.HateoasLinkBuilder;
 import jakarta.transaction.Transactional;
-import jdk.swing.interop.SwingInterOpUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -28,9 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -38,21 +31,26 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class PessoaServiceImpl {
 
   private PessoaRepository repository;
+  private PessoaUtilitiesService pessoaUtilitiesService;
+  private EnderecoUtilitiesService enderecoUtilitiesService;
+  private TelefoneUtilitiesService telefoneUtilitiesService;
   private VeiculoRepository veiculoRepository;
-  private EnderecoRepository enderecoRepository;
   private PagedResourcesAssembler<PessoaResponseDTO> assembler;
 
   public PessoaServiceImpl( PessoaRepository repository,
-                             VeiculoRepository veiculoRepository,
-                             EnderecoRepository enderecoRepository,
-                             PagedResourcesAssembler<PessoaResponseDTO> assembler ) {
+                            PessoaUtilitiesService pessoaUtilitiesService,
+                            EnderecoUtilitiesService enderecoUtilitiesService,
+                            TelefoneUtilitiesService telefoneUtilitiesService,
+                            VeiculoRepository veiculoRepository,
+                            PagedResourcesAssembler<PessoaResponseDTO> assembler ) {
 
     this.repository = repository;
+    this.pessoaUtilitiesService = pessoaUtilitiesService;
+    this.enderecoUtilitiesService = enderecoUtilitiesService;
+    this.telefoneUtilitiesService = telefoneUtilitiesService;
     this.veiculoRepository = veiculoRepository;
-    this.enderecoRepository = enderecoRepository;
     this.assembler = assembler;
   }
-
 
   @Transactional
   public ResponseEntity<PessoaResponseDTO> save( PessoaRequestDTO pessoaRequest, String placa ) {
@@ -72,37 +70,18 @@ public class PessoaServiceImpl {
   private Pessoa criarPessoaESalvar(PessoaRequestDTO pessoaRequestDTO) {
     Pessoa pessoa = DozerMapper.parseObject(pessoaRequestDTO, Pessoa.class);
     if (pessoaRequestDTO.getEnderecoId() != null) {
-      pessoa.setEndereco(buscarEndereco(pessoaRequestDTO.getEnderecoId()));
+      pessoa.setEndereco(enderecoUtilitiesService.buscarEndereco(pessoaRequestDTO.getEnderecoId()));
     }
     return repository.save(pessoa);
   }
 
-  protected Endereco buscarEndereco(Long enderecoId) {
-    return enderecoRepository.findById(enderecoId)
-            .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + enderecoId));
-  }
-
   private PessoaResponseDTO criarPessoaResponseDTO(Pessoa pessoa) {
     PessoaResponseDTO pessoaResponseDTO = DozerMapper.parseObject(pessoa, PessoaResponseDTO.class);
-    pessoaResponseDTO.setTelefonesResponse(converterListaTelefoneEmListaTelefoneResponseDTO(pessoa.getTelefones()));
-    pessoaResponseDTO.setEnderecoResponse(converterEnderecoEmEnderecoResponseDTO(pessoa.getEndereco()));
+    pessoaResponseDTO.setTelefonesResponse(
+            telefoneUtilitiesService.converterListaTelefoneEmListaTelefoneDTO(pessoa.getTelefones()));
+    pessoaResponseDTO.setEnderecoResponse(
+            enderecoUtilitiesService.converterEnderecoEmEnderecoResponseDTO(pessoa.getEndereco()));
     return pessoaResponseDTO;
-  }
-
-  protected List<TelefoneResponseDTO> converterListaTelefoneEmListaTelefoneResponseDTO(List<Telefone> telefones) {
-    if (telefones == null)
-      return null;
-
-    return telefones.stream().map(telefone ->
-            DozerMapper.parseObject(telefone, TelefoneResponseDTO.class))
-            .collect(Collectors.toList());
-  }
-
-  protected EnderecoResponseDTO converterEnderecoEmEnderecoResponseDTO(Endereco endereco) {
-    if (endereco == null)
-      return null;
-
-    return DozerMapper.parseObject(endereco, EnderecoResponseDTO.class);
   }
 
   private void criarLinksHateoasDePessoaResponseDTO(PessoaResponseDTO pessoaResponseDTO) {
@@ -111,23 +90,19 @@ public class PessoaServiceImpl {
   }
 
   public ResponseEntity<PessoaResponseDTO> findById( Long id ) {
-    Pessoa pessoa = buscarPessoa(id);
+    Pessoa pessoa = pessoaUtilitiesService.buscarPessoa(id);
     PessoaResponseDTO pessoaResponseDTO = criarPessoaResponseDTO(pessoa);
     criarLinksHateoasDePessoaResponseDTO(pessoaResponseDTO);
 
     return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.OK);
   }
 
-  protected Pessoa buscarPessoa(Long id) {
-    return repository.findById(id)
-            .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + id));
-  }
-
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll( Pageable pageable ) {
     Page<Pessoa> pessoas = criarPagePessoa(pageable);
     Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoas);
     pessoaResponseDTOS.forEach(this::criarLinksHateoasDePessoaResponseDTO);
-    Link link = criarLinkHateoasNavegacaoPorPaginas(pageable);
+
+    Link link = new HateoasLinkBuilder().gerarLink(PessoaRestController.class, "findAll");
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }
@@ -144,15 +119,9 @@ public class PessoaServiceImpl {
     return pessoaPage.map(this::criarPessoaResponseDTO);
   }
 
-  protected Link criarLinkHateoasNavegacaoPorPaginas(Pageable pageable) {
-    return linkTo(methodOn(PessoaRestController.class).findAll(
-            pageable.getPageNumber(), pageable.getPageSize(), "ASC"
-    )).withSelfRel();
-  }
-
   @Transactional
   public ResponseEntity<PessoaResponseDTO> update( PessoaRequestDTO pessoaRequest, Long id ) {
-    buscarPessoa(id);
+    pessoaUtilitiesService.buscarPessoa(id);
     Pessoa pessoa = atualizarDadosPessoaESalvar(pessoaRequest, id);
     PessoaResponseDTO pessoaResponseDTO = criarPessoaResponseDTO(pessoa);
     criarLinksHateoasDePessoaResponseDTO(pessoaResponseDTO);
@@ -164,7 +133,7 @@ public class PessoaServiceImpl {
     Pessoa p = DozerMapper.parseObject(pessoaRequestDTO, Pessoa.class);
     p.setId(id);
     if (pessoaRequestDTO.getEnderecoId() != null) {
-      p.setEndereco(buscarEndereco(pessoaRequestDTO.getEnderecoId()));
+      p.setEndereco(enderecoUtilitiesService.buscarEndereco(pessoaRequestDTO.getEnderecoId()));
     }
     return repository.save(p);
   }
@@ -174,7 +143,9 @@ public class PessoaServiceImpl {
     validarPageSize(pessoaPage);
     Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoaPage);
     pessoaResponseDTOS.forEach(this::criarLinksHateoasDePessoaResponseDTO);
-    Link link = criarLinkHateoasNavegacaoPorPaginas(pageable);
+
+    Link link = new HateoasLinkBuilder().gerarLinkFiltrando(
+            PessoaRestController.class, "findByNome", nome);
 
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }

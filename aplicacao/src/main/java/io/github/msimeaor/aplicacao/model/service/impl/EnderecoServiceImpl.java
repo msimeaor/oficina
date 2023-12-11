@@ -3,17 +3,17 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 import io.github.msimeaor.aplicacao.controller.EnderecoRestController;
 import io.github.msimeaor.aplicacao.controller.PessoaRestController;
 import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoConflictException;
-import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
-import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.EnderecoRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
-import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.service.EnderecoService;
+import io.github.msimeaor.aplicacao.model.service.utilities.EnderecoUtilitiesService;
+import io.github.msimeaor.aplicacao.model.service.utilities.PessoaUtilitiesService;
+import io.github.msimeaor.aplicacao.model.utilities.HateoasLinkBuilder;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -35,25 +34,29 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class EnderecoServiceImpl implements EnderecoService {
 
   private EnderecoRepository repository;
-  private PessoaRepository pessoaRepository;
+  private EnderecoUtilitiesService enderecoUtilitiesService;
+  private PessoaUtilitiesService pessoaUtilitiesService;
   private PagedResourcesAssembler<EnderecoResponseDTO> assembler;
 
   public EnderecoServiceImpl( EnderecoRepository repository,
-                              PessoaRepository pessoaRepository,
+                              EnderecoUtilitiesService enderecoUtilitiesService,
+                              PessoaUtilitiesService pessoaUtilitiesService,
                               PagedResourcesAssembler<EnderecoResponseDTO> assembler) {
+
     this.repository = repository;
-    this.pessoaRepository = pessoaRepository;
+    this.enderecoUtilitiesService = enderecoUtilitiesService;
+    this.pessoaUtilitiesService = pessoaUtilitiesService;
     this.assembler = assembler;
   }
 
   @Transactional
   public ResponseEntity<EnderecoResponseDTO> save( EnderecoRequestDTO enderecoRequest ) {
     validarLogradouro(enderecoRequest.getLogradouro());
-    List<Pessoa> pessoas = criarListaPessoaPorId(enderecoRequest.getPessoasId());
+    List<Pessoa> pessoas = pessoaUtilitiesService.criarListaPessoasPorId(enderecoRequest.getPessoasId());
     Endereco endereco = criarEnderecoESalvar(enderecoRequest, pessoas);
     EnderecoResponseDTO enderecoResponseDTO = criarEnderecoResponse(endereco);
     criarLinksHateoasDeEnderecoResponseDTO(enderecoResponseDTO, pessoas);
-    atualizarPessoaRelacionandoEndereco(pessoas, endereco);
+    pessoaUtilitiesService.atualizarEnderecoDasPessoas(pessoas, endereco);
 
     return new ResponseEntity<>(enderecoResponseDTO, HttpStatus.CREATED);
   }
@@ -61,15 +64,6 @@ public class EnderecoServiceImpl implements EnderecoService {
   protected void validarLogradouro(String logradouro) {
     if (repository.findByLogradouro(logradouro) != null)
       throw new EnderecoConflictException("Logradouro já cadastrado!");
-  }
-
-  protected List<Pessoa> criarListaPessoaPorId(List<Long> pessoasId) {
-    if (pessoasId == null)
-      return null;
-
-    return pessoasId.stream().map((pessoaId) -> pessoaRepository.findById(pessoaId)
-            .orElseThrow(() -> new PessoaNotFoundException("Cliente não encontrado! ID: " + pessoaId)))
-            .collect(Collectors.toList());
   }
 
   protected Endereco criarEnderecoESalvar(EnderecoRequestDTO enderecoRequestDTO, List<Pessoa> pessoas) {
@@ -101,32 +95,20 @@ public class EnderecoServiceImpl implements EnderecoService {
             .findById(enderecoResponseDTO.getId())).withSelfRel());
   }
 
-  protected void atualizarPessoaRelacionandoEndereco(List<Pessoa> pessoas, Endereco endereco) {
-    if (pessoas != null) {
-      pessoas.forEach(
-              pessoa -> pessoa.setEndereco(endereco)
-      );
-    }
-  }
-
   public ResponseEntity<EnderecoResponseDTO> findById( Long id ) {
-    Endereco endereco = buscarEndereco(id);
+    Endereco endereco = enderecoUtilitiesService.buscarEndereco(id);
     EnderecoResponseDTO enderecoResponseDTO = criarEnderecoResponse(endereco);
     criarLinksHateoasDeEnderecoResponseDTO(enderecoResponseDTO, endereco.getPessoas());
 
     return new ResponseEntity<>(enderecoResponseDTO, HttpStatus.OK);
   }
 
-  protected Endereco buscarEndereco(Long id) {
-    return repository.findById(id)
-            .orElseThrow(() -> new EnderecoNotFoundException("Endereço não encontrado! ID: " + id));
-  }
-
   public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findAll( Pageable pageable ) {
     Page<Endereco> enderecoPage = criarPageEndereco(pageable);
     Page<EnderecoResponseDTO> enderecoResponseDTOS = converterPageEnderecoEmPageEnderecoResponseDTO(enderecoPage);
     criarLinksHateoasPageEnderecoResponseDTO(enderecoResponseDTOS, enderecoPage);
-    Link link = criarLinkHateoasNavegacaoEntrePaginas(pageable);
+
+    Link link = new HateoasLinkBuilder().gerarLink(EnderecoRestController.class, "findAll");
 
     return new ResponseEntity<>(assembler.toModel(enderecoResponseDTOS, link), HttpStatus.OK);
   }
@@ -155,16 +137,10 @@ public class EnderecoServiceImpl implements EnderecoService {
     }));
   }
 
-  protected Link criarLinkHateoasNavegacaoEntrePaginas(Pageable pageable) {
-    return linkTo(methodOn(EnderecoRestController.class).findAll(
-            pageable.getPageNumber(), pageable.getPageSize(), "ASC"
-    )).withSelfRel();
-  }
-
   @Transactional
   public ResponseEntity<EnderecoResponseDTO> update( EnderecoRequestDTO enderecoRequest, Long id ) {
     validarLogradouro(enderecoRequest.getLogradouro());
-    Endereco endereco = buscarEndereco(id);
+    Endereco endereco = enderecoUtilitiesService.buscarEndereco(id);
     endereco = atualizarEnderecoESalvar(enderecoRequest, endereco.getPessoas(), id);
     EnderecoResponseDTO enderecoResponse = criarEnderecoResponse(endereco);
     criarLinksHateoasDeEnderecoResponseDTO(enderecoResponse, endereco.getPessoas());
@@ -176,16 +152,13 @@ public class EnderecoServiceImpl implements EnderecoService {
     Endereco endereco = DozerMapper.parseObject(enderecoRequestDTO, Endereco.class);
     endereco.setId(id);
     if (enderecoRequestDTO.getPessoasId() != null) {
-      List<Pessoa> novasPessoas = criarListaPessoaPorId(enderecoRequestDTO.getPessoasId());
-      setarEnderecoDasPessoas(novasPessoas, endereco);
+      List<Pessoa> novasPessoas = pessoaUtilitiesService.criarListaPessoasPorId(
+              enderecoRequestDTO.getPessoasId());
+      pessoaUtilitiesService.atualizarEnderecoDasPessoas(novasPessoas, endereco);
       pessoas.addAll(novasPessoas);
     }
     endereco.setPessoas(pessoas);
     return repository.save(endereco);
-  }
-
-  protected void setarEnderecoDasPessoas(List<Pessoa> pessoas, Endereco endereco) {
-    pessoas.forEach(pessoa -> pessoa.setEndereco(endereco));
   }
 
   public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findByLogradouro(String logradouro,
@@ -194,7 +167,9 @@ public class EnderecoServiceImpl implements EnderecoService {
     Page<Endereco> enderecoPage = criarPageEnderecoPorLogradouro(logradouro, pageable);
     Page<EnderecoResponseDTO> enderecoResponseDTOS = converterPageEnderecoEmPageEnderecoResponseDTO(enderecoPage);
     criarLinksHateoasPageEnderecoResponseDTO(enderecoResponseDTOS, enderecoPage);
-    Link link = criarLinkHateoasNavegacaoEntrePaginas(pageable);
+
+    Link link = new HateoasLinkBuilder().gerarLinkFiltrando(
+            EnderecoRestController.class, "findByLogradouro", logradouro);
 
     return new ResponseEntity<>(assembler.toModel(enderecoResponseDTOS, link), HttpStatus.OK);
   }
