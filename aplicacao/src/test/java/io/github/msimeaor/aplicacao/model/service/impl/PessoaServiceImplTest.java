@@ -2,21 +2,19 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.enums.Fabricantes;
 import io.github.msimeaor.aplicacao.enums.UFs;
-import io.github.msimeaor.aplicacao.exceptions.endereco.EnderecoNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaConflictException;
-import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
-import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
-import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.entity.Telefone;
 import io.github.msimeaor.aplicacao.model.entity.Veiculo;
-import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
+import io.github.msimeaor.aplicacao.model.service.utilities.EnderecoUtilitiesService;
+import io.github.msimeaor.aplicacao.model.service.utilities.PessoaUtilitiesService;
+import io.github.msimeaor.aplicacao.model.service.utilities.TelefoneUtilitiesService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -51,15 +49,19 @@ class PessoaServiceImplTest {
   @Mock
   private VeiculoRepository veiculoRepository;
   @Mock
-  private EnderecoRepository enderecoRepository;
+  private PessoaUtilitiesService pessoaUtilitiesService;
+  @Mock
+  private EnderecoUtilitiesService enderecoUtilitiesService;
+  @Mock
+  private TelefoneUtilitiesService telefoneUtilitiesService;
   @Mock
   private PagedResourcesAssembler<PessoaResponseDTO> assembler;
 
   private PessoaRequestDTO pessoaRequestDTO;
   private Pessoa pessoa;
   private Endereco endereco;
-  private Veiculo veiculo;
   private Telefone telefone;
+  private Veiculo veiculo;
   private Pageable pageable;
   private Page<Pessoa> pessoaPage;
   private PagedModel<EntityModel<PessoaResponseDTO>> pessoaPagedModel;
@@ -80,14 +82,14 @@ class PessoaServiceImplTest {
   @Test
   void whenSaveThenReturnSuccess() {
     when(repository.findByNome(anyString())).thenReturn(Optional.empty());
-    when(enderecoRepository.findById(anyLong())).thenReturn(Optional.of(endereco));
+    when(enderecoUtilitiesService.buscarEndereco(anyLong())).thenReturn(endereco);
     when(repository.save(any(Pessoa.class))).thenReturn(pessoa);
 
     var response = pessoaService.save(pessoaRequestDTO, PLACA);
 
     assertNotNull(response);
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
-    assertEquals(response.getBody().getClass(), PessoaResponseDTO.class);
+    assertEquals(Objects.requireNonNull(response.getBody()).getClass(), PessoaResponseDTO.class);
 
     assertEquals(ID ,response.getBody().getId());
     assertEquals(SEXO, response.getBody().getSexo());
@@ -111,76 +113,17 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void whenBuscarEnderecoThenReturnEnderecoNotFoundException() {
-    when(enderecoRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-    try {
-      pessoaService.buscarEndereco(2L);
-
-    } catch (Exception ex) {
-      assertEquals(EnderecoNotFoundException.class, ex.getClass());
-      assertEquals("Endereço não encontrado! ID: " + 2L, ex.getMessage());
-    }
-  }
-
-  @Test
-  void whenConverterListaTelefoneEmListaTelefoneResponseDTOThenReturnSuccess() {
-    var response = pessoaService.converterListaTelefoneEmListaTelefoneResponseDTO(
-            Collections.singletonList(telefone));
-
-    assertNotNull(response);
-    assertEquals(TelefoneResponseDTO.class, response.get(0).getClass());
-    assertEquals(ID, response.get(0).getId());
-  }
-
-  @Test
-  void whenConverterListaTelefoneEmListaTelefoneResponseDTOThenReturnNull() {
-    var response = pessoaService.converterListaTelefoneEmListaTelefoneResponseDTO(null);
-
-    assertNull(response);
-  }
-
-  @Test
-  void whenConverterEnderecoEmEnderecoResponseDTOThenReturnSuccess() {
-    var response = pessoaService.converterEnderecoEmEnderecoResponseDTO(endereco);
-
-    assertNotNull(response);
-    assertEquals(EnderecoResponseDTO.class, response.getClass());
-    assertEquals(ID, endereco.getId());
-  }
-
-  @Test
-  void whenConverterEnderecoEmEnderecoResponseDTOThenReturnNull() {
-    var response = pessoaService.converterEnderecoEmEnderecoResponseDTO(null);
-
-    assertNull(response);
-  }
-
-  @Test
   void whenFindByIdThenReturnSuccess() {
-    when(repository.findById(anyLong())).thenReturn(Optional.of(pessoa));
+    when(pessoaUtilitiesService.buscarPessoa(anyLong())).thenReturn(pessoa);
 
     var response = pessoaService.findById(ID);
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(response.getBody().getClass(), PessoaResponseDTO.class);
+    assertEquals(Objects.requireNonNull(response.getBody()).getClass(), PessoaResponseDTO.class);
 
     assertEquals(ID ,response.getBody().getId());
     assertEquals("</api/pessoas/1>;rel=\"self\"", response.getBody().getLinks().toString());
-  }
-
-  @Test
-  void whenBuscarPessoaTheReturnPessoaNotFoundException() {
-    when(repository.findById(anyLong())).thenReturn(Optional.empty());
-
-    try {
-      pessoaService.buscarPessoa(2L);
-
-    } catch (Exception ex) {
-      assertEquals(PessoaNotFoundException.class, ex.getClass());
-      assertEquals("Cliente não encontrado! ID: " + 2L, ex.getMessage());
-    }
   }
 
   @Test
@@ -193,7 +136,7 @@ class PessoaServiceImplTest {
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(PagedModel.class, response.getBody().getClass());
+    assertEquals(PagedModel.class, Objects.requireNonNull(response.getBody()).getClass());
 
     // Here I verify if the person returned list have person valid registers
     response.getBody().getContent().forEach(e -> {
@@ -208,14 +151,6 @@ class PessoaServiceImplTest {
     assertEquals(1, response.getBody().getMetadata().getTotalPages());
     assertEquals(1, response.getBody().getMetadata().getTotalElements());
     assertEquals(1, response.getBody().getMetadata().getSize());
-
-    /*
-    Here I verify if hateoas link of page navigation is correct, based on current page
-    Taking into account that this person list only has one person register. If this list had other registry,
-    this hateoas link would contain links to next page, previous page, current page etc.
-     */
-    assertEquals("</api/pessoas?page=0&size=10&direction=ASC>;rel=\"self\"",
-            response.getBody().getLinks().toString());
   }
 
   @Test
@@ -260,18 +195,9 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void whenCriarLinkHateoasNavegacaoPorPaginasThenReturnSuccess() {
-    var response = pessoaService.criarLinkHateoasNavegacaoPorPaginas(pageable);
-
-    assertNotNull(response);
-    assertEquals(Link.class, response.getClass());
-    assertTrue(response.toString().startsWith("</api/pessoas"));
-  }
-
-  @Test
   void whenUpdateThenReturnSuccess() {
-    when(repository.findById(anyLong())).thenReturn(Optional.of(pessoa));
-    when(enderecoRepository.findById(anyLong())).thenReturn(Optional.of(endereco));
+    when(pessoaUtilitiesService.buscarPessoa(anyLong())).thenReturn(pessoa);
+    when(enderecoUtilitiesService.buscarEndereco(anyLong())).thenReturn(endereco);
     pessoa.setNome("Nome updated");
     when(repository.save(any(Pessoa.class))).thenReturn(pessoa);
 
@@ -279,7 +205,7 @@ class PessoaServiceImplTest {
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(ID, response.getBody().getId());
+    assertEquals(ID, Objects.requireNonNull(response.getBody()).getId());
     assertEquals("Nome updated", response.getBody().getNome());
   }
 
@@ -293,7 +219,7 @@ class PessoaServiceImplTest {
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(PagedModel.class, response.getBody().getClass());
+    assertEquals(PagedModel.class, Objects.requireNonNull(response.getBody()).getClass());
 
     // Here I verify if the person returned list have person valid registers
     response.getBody().getContent().forEach(e -> {
@@ -308,14 +234,6 @@ class PessoaServiceImplTest {
     assertEquals(1, response.getBody().getMetadata().getTotalPages());
     assertEquals(1, response.getBody().getMetadata().getTotalElements());
     assertEquals(1, response.getBody().getMetadata().getSize());
-
-    /*
-    Here I verify if hateoas link of page navigation is correct, based on current page
-    Taking into account that this person list only has one person registered. If this list had other registry,
-    this hateoas link would contain links to next page, previous page, current page etc.
-     */
-    assertEquals("</api/pessoas?page=0&size=10&direction=ASC>;rel=\"self\"",
-            response.getBody().getLinks().toString());
   }
 
   @Test
@@ -410,8 +328,7 @@ class PessoaServiceImplTest {
     entityModels.add(entityModel);
     PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(entityModels.size(),
             0, entityModels.size());
-    Link link = pessoaService.criarLinkHateoasNavegacaoPorPaginas(pageable);
-    pessoaPagedModel = PagedModel.of(entityModels, pageMetadata, link);
+    pessoaPagedModel = PagedModel.of(entityModels, pageMetadata);
   }
 
 }

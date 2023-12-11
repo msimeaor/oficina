@@ -1,15 +1,14 @@
 package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
-import io.github.msimeaor.aplicacao.exceptions.pessoa.PessoaNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.TelefoneRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.entity.Telefone;
-import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.TelefoneRepository;
+import io.github.msimeaor.aplicacao.model.service.utilities.PessoaUtilitiesService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -28,12 +27,10 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -45,7 +42,7 @@ class TelefoneServiceImplTest {
   @Mock
   private TelefoneRepository repository;
   @Mock
-  private PessoaRepository pessoaRepository;
+  private PessoaUtilitiesService pessoaUtilitiesService;
   @Mock
   private PagedResourcesAssembler<TelefoneResponseDTO> assembler;
 
@@ -70,14 +67,14 @@ class TelefoneServiceImplTest {
   @Test
   void whenSaveThenReturnSuccess() {
     when(repository.findByNumero(anyString())).thenReturn(null);
-    when(pessoaRepository.findById(anyLong())).thenReturn(Optional.of(pessoa));
+    when(pessoaUtilitiesService.buscarPessoa(anyLong())).thenReturn(pessoa);
     when(repository.save(any(Telefone.class))).thenReturn(telefone);
 
     var response = telefoneService.save(telefoneRequestDTO);
 
     assertNotNull(response);
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
-    assertEquals(TelefoneResponseDTO.class, response.getBody().getClass());
+    assertEquals(TelefoneResponseDTO.class, Objects.requireNonNull(response.getBody()).getClass());
 
     assertEquals(ID ,response.getBody().getId());
     assertEquals(NUMERO, response.getBody().getNumero());
@@ -100,31 +97,6 @@ class TelefoneServiceImplTest {
   }
 
   @Test
-  void whenBuscarPessoaThenReturnSuccess() {
-    when(pessoaRepository.findById(anyLong())).thenReturn(Optional.of(pessoa));
-
-    var response = telefoneService.buscarPessoa(ID);
-
-    assertNotNull(response);
-    assertEquals(Pessoa.class, response.getClass());
-    assertEquals(ID, response.getId());
-  }
-
-  @Test
-  void whenBuscarPessoaThenReturnPessoaNotFoundException() {
-    when(pessoaRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-    try {
-      telefoneService.buscarPessoa(2L);
-
-    } catch (Exception ex) {
-      assertNotNull(ex);
-      assertEquals(PessoaNotFoundException.class, ex.getClass());
-      assertEquals("Cliente não encontrado! ID: " + 2L, ex.getMessage());
-    }
-  }
-
-  @Test
   void whenCriarTelefoneESalvarThenReturnSuccess() {
     when(repository.save(any(Telefone.class))).thenReturn(telefone);
 
@@ -135,41 +107,6 @@ class TelefoneServiceImplTest {
     assertEquals(ID, response.getId());
     assertNotNull(response.getPessoa());
     assertEquals(pessoa.getId(), response.getPessoa().getId());
-  }
-
-  @Test
-  void whenAtualizarListaDeTelefonesDaPessoaThenReturnSuccess() {
-    /*
-    Pass the instance of Pessoa who owns of Telefone who is being saved and pass also the instance of Telefone
-    later to be saved. Iterate the Telefone list of this passed Pessoa and add the Telefone to it
-    */
-    telefoneService.atualizarListaDeTelefonesDaPessoa(pessoa, telefone);
-
-    assertNotNull(pessoa.getTelefones());
-    assertEquals(ID, pessoa.getTelefones().get(0).getId());
-  }
-
-  @Test
-  void whenAtualizarListaDeTelefonesDaPessoaWithPersonWithOtherTelefoneThenReturnSuccess() {
-    /*
-    In this case, the person already has one Telefone in Telefone list. We're going add a new Telefone on the list,
-    causing the list come to have two Telefone registers
-    */
-
-    Telefone telefone1 = Telefone.builder()
-                    .id(2L)
-                    .numero("01000000000")
-                    .pessoa(pessoa)
-                    .build();
-
-    List<Telefone> telefones = new ArrayList<>();
-    telefones.add(telefone1);
-    pessoa.setTelefones(telefones);
-
-    telefoneService.atualizarListaDeTelefonesDaPessoa(pessoa, telefone);
-
-    assertNotNull(pessoa.getTelefones());
-    assertEquals(ID, pessoa.getTelefones().get(1).getId());
   }
 
   @Test
@@ -203,7 +140,7 @@ class TelefoneServiceImplTest {
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(TelefoneResponseDTO.class, response.getBody().getClass());
+    assertEquals(TelefoneResponseDTO.class, Objects.requireNonNull(response.getBody()).getClass());
 
     assertEquals(ID ,response.getBody().getId());
     // taking into account that the returned phone has this person on your person list
@@ -246,7 +183,7 @@ class TelefoneServiceImplTest {
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(PagedModel.class, response.getBody().getClass());
+    assertEquals(PagedModel.class, Objects.requireNonNull(response.getBody()).getClass());
 
     // Here I verify if the phone returned list have phone valid registers
     response.getBody().getContent().forEach(e -> {
@@ -261,14 +198,6 @@ class TelefoneServiceImplTest {
     assertEquals(1, response.getBody().getMetadata().getTotalPages());
     assertEquals(1, response.getBody().getMetadata().getTotalElements());
     assertEquals(1, response.getBody().getMetadata().getSize());
-
-    /*
-    Here I verify if hateoas link of page navigation is correct, based on current page
-    Taking into account that this phone list only has one person registered. If this list had other registry,
-    this hateoas link would contain links to next page, previous page, current page etc.
-     */
-    assertEquals("</api/telefones?page=0&size=10&direction=ASC>;rel=\"self\"",
-            response.getBody().getLinks().toString());
   }
 
   @Test
@@ -314,18 +243,9 @@ class TelefoneServiceImplTest {
   }
 
   @Test
-  void whenCriarLinkNavegacaoPorPaginasThenReturnSuccess() {
-    var response = telefoneService.criarLinkNavegacaoPorPaginas(pageable);
-
-    assertNotNull(response);
-    assertEquals(Link.class, response.getClass());
-    assertTrue(response.toString().startsWith("</api/telefones?"));
-  }
-
-  @Test
   void whenUpdateThenReturnSuccess() {
     when(repository.findByNumero(anyString())).thenReturn(null);
-    when(pessoaRepository.findById(anyLong())).thenReturn(Optional.of(pessoa));
+    when(pessoaUtilitiesService.buscarPessoa(anyLong())).thenReturn(pessoa);
     when(repository.findById(anyLong())).thenReturn(Optional.of(telefone));
     telefone.setNumero("02000000000");
     when(repository.save(any(Telefone.class))).thenReturn(telefone);
@@ -334,7 +254,7 @@ class TelefoneServiceImplTest {
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(TelefoneResponseDTO.class, response.getBody().getClass());
+    assertEquals(TelefoneResponseDTO.class, Objects.requireNonNull(response.getBody()).getClass());
 
     assertEquals(ID ,response.getBody().getId());
     assertEquals("02000000000", response.getBody().getNumero());
@@ -361,7 +281,7 @@ class TelefoneServiceImplTest {
     var response = telefoneService.findByNumero(NUMERO);
 
     assertNotNull(response);
-    assertEquals(TelefoneResponseDTO.class, response.getBody().getClass());
+    assertEquals(TelefoneResponseDTO.class, Objects.requireNonNull(response.getBody()).getClass());
     assertEquals(ID, response.getBody().getId());
     assertEquals(NUMERO, response.getBody().getNumero());
   }
@@ -412,8 +332,7 @@ class TelefoneServiceImplTest {
     entityModels.add(entityModel);
     PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(entityModels.size(),
             0, entityModels.size());
-    Link link = telefoneService.criarLinkNavegacaoPorPaginas(pageable);
-    telefonePagedModel = PagedModel.of(entityModels, pageMetadata, link);
+    telefonePagedModel = PagedModel.of(entityModels, pageMetadata);
   }
 
 }
