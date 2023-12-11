@@ -121,9 +121,9 @@ public class PessoaRestController {
   )
   @GetMapping
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findAll(
-          @RequestParam(name = "page", defaultValue = "0") Integer page,
-          @RequestParam(name = "size", defaultValue = "10") Integer size,
-          @RequestParam(name = "direction", defaultValue = "ASC") String direction
+          @RequestParam(name = "page", defaultValue = "0", required = false) Integer page,
+          @RequestParam(name = "size", defaultValue = "10", required = false) Integer size,
+          @RequestParam(name = "direction", defaultValue = "ASC", required = false) String direction
   ) {
 
     var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -191,9 +191,9 @@ public class PessoaRestController {
   @GetMapping("/findByNome/{nome}")
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNome(
           @PathVariable(name = "nome") String nome,
-          @RequestParam(name = "page", defaultValue = "0") Integer page,
-          @RequestParam(name = "size", defaultValue = "5") Integer size,
-          @RequestParam(name = "direction", defaultValue = "ASC") String direction
+          @RequestParam(name = "page", defaultValue = "0", required = false) Integer page,
+          @RequestParam(name = "size", defaultValue = "5", required = false) Integer size,
+          @RequestParam(name = "direction", defaultValue = "ASC", required = false) String direction
   ) {
 
     var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;

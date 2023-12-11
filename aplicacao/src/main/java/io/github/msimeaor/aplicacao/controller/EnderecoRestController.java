@@ -118,9 +118,9 @@ public class EnderecoRestController {
   )
   @GetMapping
   public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findAll(
-          @RequestParam(name = "page", defaultValue = "0") Integer page,
-          @RequestParam(name = "size", defaultValue = "10") Integer size,
-          @RequestParam(name = "direction", defaultValue = "ASC") String direction
+          @RequestParam(name = "page", defaultValue = "0", required = false) Integer page,
+          @RequestParam(name = "size", defaultValue = "10", required = false) Integer size,
+          @RequestParam(name = "direction", defaultValue = "ASC", required = false) String direction
   ) {
 
     var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -198,9 +198,9 @@ public class EnderecoRestController {
   @GetMapping("/findByLogradouro/{logradouro}")
   public ResponseEntity<PagedModel<EntityModel<EnderecoResponseDTO>>> findByLogradouro(
           @PathVariable(name = "logradouro") String logradouro,
-          @RequestParam(name = "page", defaultValue = "0") Integer page,
-          @RequestParam(name = "size", defaultValue = "10") Integer size,
-          @RequestParam(name = "direction", defaultValue = "ASC") String direction
+          @RequestParam(name = "page", defaultValue = "0", required = false) Integer page,
+          @RequestParam(name = "size", defaultValue = "10", required = false) Integer size,
+          @RequestParam(name = "direction", defaultValue = "ASC", required = false) String direction
   ) {
 
     var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
