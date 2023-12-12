@@ -8,7 +8,6 @@ import io.github.msimeaor.aplicacao.model.dto.request.PessoaRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.PessoaResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
 import io.github.msimeaor.aplicacao.model.entity.Pessoa;
-import io.github.msimeaor.aplicacao.model.entity.Telefone;
 import io.github.msimeaor.aplicacao.model.entity.Veiculo;
 import io.github.msimeaor.aplicacao.model.repository.PessoaRepository;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
@@ -35,7 +34,8 @@ import org.springframework.http.HttpStatus;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -60,7 +60,6 @@ class PessoaServiceImplTest {
   private PessoaRequestDTO pessoaRequestDTO;
   private Pessoa pessoa;
   private Endereco endereco;
-  private Telefone telefone;
   private Veiculo veiculo;
   private Pageable pageable;
   private Page<Pessoa> pessoaPage;
@@ -99,13 +98,12 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void whenValidarCadastroExistenteThenReturnPessoaConflictException() {
-    when(repository.findByNome(anyString())).thenReturn(Optional.of(pessoa));
-    when(veiculoRepository.findByPlaca(anyString())).thenReturn(Optional.of(veiculo));
+  void whenSaveThenThrowPessoaConflictException() {
+    when(repository.findByNome(any(String.class))).thenReturn(Optional.of(pessoa));
+    when(veiculoRepository.findByPlaca(any(String.class))).thenReturn(Optional.of(veiculo));
 
     try {
-      pessoaService.validarCadastroExistente(NOME, PLACA);
-
+      pessoaService.save(pessoaRequestDTO, "JJJ0000");
     } catch (Exception ex) {
       assertEquals(PessoaConflictException.class, ex.getClass());
       assertEquals("Cliente já cadastrado!", ex.getMessage());
@@ -154,44 +152,15 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void whenCriarPagePessoaThenReturnSuccess() {
-    when(repository.findAll(any(Pageable.class))).thenReturn(pessoaPage);
-
-    var response = pessoaService.criarPagePessoa(pageable);
-
-    assertNotNull(response);
-    assertEquals(PageImpl.class, response.getClass());
-    response.forEach(p -> {
-      assertNotNull(p);
-      assertEquals(Pessoa.class, p.getClass());
-      assertEquals(ID, p.getId());
-    });
-  }
-
-  @Test
-  void whenCriarPagePessoaThenReturnEmptyListException() {
+  void whenFindAllThenReturnEmptyListException() {
     when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
     try {
-      pessoaService.criarPagePessoa(pageable);
-
+      pessoaService.findAll(pageable);
     } catch (Exception ex) {
       assertEquals(EmptyListException.class, ex.getClass());
       assertEquals("Não existem clientes cadastrados!", ex.getMessage());
     }
-  }
-
-  @Test
-  void whenConverterPagePessoaEmPagePessoaResponseDTOThenReturnSuccess() {
-    var response = pessoaService.converterPagePessoaEmPagePessoaResponseDTO(pessoaPage);
-
-    assertNotNull(response);
-    assertEquals(PageImpl.class, response.getClass());
-    response.forEach(p -> {
-      assertNotNull(p);
-      assertEquals(PessoaResponseDTO.class, p.getClass());
-      assertEquals(ID, p.getId());
-    });
   }
 
   @Test
@@ -237,44 +206,14 @@ class PessoaServiceImplTest {
   }
 
   @Test
-  void whenCriarPagePessoaComFindByNomeLikeThenReturnSuccess() {
-    when(repository.findByNomeLike(anyString(), any(Pageable.class)))
-            .thenReturn(pessoaPage);
-
-    var response = pessoaService.criarPagePessoaComFindByNomeLike("%" + NOME + "%", pageable);
-
-    assertNotNull(response);
-    assertEquals(PageImpl.class, response.getClass());
-    response.forEach(p -> {
-      assertNotNull(p);
-      assertEquals(Pessoa.class, p.getClass());
-      assertEquals(ID, p.getId());
-      assertTrue(p.getNome().contains(NOME));
-    });
-  }
-
-  @Test
-  void whenCriarPagePessoaComFindByNomeLikeThenReturnEmptyListException() {
-    when(repository.findByNomeLike(anyString(), any(Pageable.class)))
+  void whenFindByNomeLikeThenReturnEmptyListException() {
+    when(repository.findByNomeLike(any(String.class), any(Pageable.class)))
             .thenReturn(Page.empty());
 
     try {
-      pessoaService.criarPagePessoaComFindByNomeLike("%" + NOME + "%", pageable);
-
+      // Searching a name that does not exist in the database
+      pessoaService.findByNomeLike(NOME, pageable);
     } catch (Exception ex) {
-      assertNotNull(ex);
-      assertEquals(EmptyListException.class, ex.getClass());
-      assertEquals("Não existem clientes cadastrados!", ex.getMessage());
-    }
-
-  }
-
-  @Test
-  void whenValidarPageSizeThenThrowEmptyListException() {
-    try {
-      pessoaService.validarPageSize(Page.empty());
-    } catch (Exception ex) {
-      assertNotNull(ex);
       assertEquals(EmptyListException.class, ex.getClass());
       assertEquals("Não existem clientes cadastrados que tenham esse nome!", ex.getMessage());
     }
@@ -305,12 +244,6 @@ class PessoaServiceImplTest {
             .fabricante(Fabricantes.AUDI)
             .placa(PLACA)
             .kmAtual("10.000")
-            .build();
-
-    telefone = Telefone.builder()
-            .id(ID)
-            .numero("61991979110")
-            .pessoa(pessoa)
             .build();
 
     PessoaResponseDTO pessoaResponseDTO = PessoaResponseDTO.builder()

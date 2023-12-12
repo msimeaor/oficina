@@ -6,7 +6,6 @@ import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.model.dto.request.EnderecoRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.EnderecoResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Endereco;
-import io.github.msimeaor.aplicacao.model.entity.Pessoa;
 import io.github.msimeaor.aplicacao.model.repository.EnderecoRepository;
 import io.github.msimeaor.aplicacao.model.service.utilities.EnderecoUtilitiesService;
 import io.github.msimeaor.aplicacao.model.service.utilities.PessoaUtilitiesService;
@@ -28,9 +27,13 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -50,11 +53,9 @@ class EnderecoServiceImplTest {
 
   private Endereco endereco;
   private EnderecoRequestDTO enderecoRequestDTO;
-  private Pessoa pessoa;
   private EnderecoResponseDTO enderecoResponseDTO;
   private Pageable pageable;
   private Page<Endereco> enderecoPage;
-  private Page<EnderecoResponseDTO> enderecoResponseDTOPage;
   private PagedModel<EntityModel<EnderecoResponseDTO>> enderecoPagedModel;
 
   private static final Long ID = 1L;
@@ -87,54 +88,16 @@ class EnderecoServiceImplTest {
   }
 
   @Test
-  void whenValidarLogradouroThenReturnEnderecoConflictException() {
+  void whenSaveThenThrowEnderecoConflictException() {
     when(repository.findByLogradouro(anyString())).thenReturn(endereco);
 
     try {
-      enderecoService.validarLogradouro(LOGRADOURO);
-
+      // Saving an address that already exists in the database
+      enderecoService.save(enderecoRequestDTO);
     } catch (Exception ex) {
-      assertNotNull(ex);
       assertEquals(EnderecoConflictException.class, ex.getClass());
       assertEquals("Logradouro já cadastrado!", ex.getMessage());
     }
-  }
-
-  @Test
-  void whenCriarEnderecoESalvarThenReturnSuccess() {
-    when(repository.save(any(Endereco.class))).thenReturn(endereco);
-
-    var response = enderecoService.criarEnderecoESalvar(enderecoRequestDTO, Collections.singletonList(pessoa));
-    // Simulating the endereco.setPessoas of the method
-    response.setPessoas(Collections.singletonList(pessoa));
-
-    assertNotNull(response);
-    assertEquals(Endereco.class, response.getClass());
-    assertEquals(ID, response.getId());
-    assertEquals(pessoa.getId(), response.getPessoas().get(0).getId());
-  }
-
-  @Test
-  void whenCriarEnderecoResponseThenReturnSuccess() {
-    var response = enderecoService.criarEnderecoResponse(endereco);
-
-    assertNotNull(response);
-    assertEquals(EnderecoResponseDTO.class, response.getClass());
-    assertEquals(endereco.getId(), response.getId());
-  }
-
-  @Test
-  void whenCriarLinkHateoasMoradoresThenReturnSuccess() {
-    enderecoService.criarLinkHateoasMoradores(enderecoResponseDTO, Collections.singletonList(pessoa));
-
-    assertEquals("</api/pessoas/1>;rel=\"Morador(es)\"", enderecoResponseDTO.getLinks().toString());
-  }
-
-  @Test
-  void whenCriarLinkHateoasMoradoresThenFail() {
-    enderecoService.criarLinkHateoasMoradores(enderecoResponseDTO, null);
-
-    assertTrue(enderecoResponseDTO.getLinks().hasSize(0));
   }
 
   @Test
@@ -180,59 +143,16 @@ class EnderecoServiceImplTest {
   }
 
   @Test
-  void whenCriarPageEnderecoThenReturnSuccess() {
-    when(repository.findAll(any(Pageable.class))).thenReturn(enderecoPage);
-
-    var response = enderecoService.criarPageEndereco(pageable);
-
-    assertNotNull(response);
-    assertEquals(PageImpl.class, response.getClass());
-    response.forEach(e -> {
-      assertNotNull(e);
-      assertEquals(Endereco.class, e.getClass());
-      assertEquals(ID, e.getId());
-    });
-  }
-
-  @Test
-  void whenCriarPageEnderecoThenReturnEmptyListException() {
+  void whenFindAllThenThrowEmptyListException() {
     when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
     try {
-      enderecoService.criarPageEndereco(pageable);
-
+      // Searching all address when there is no address in the database
+      enderecoService.findAll(pageable);
     } catch (Exception ex) {
-      assertNotNull(ex);
       assertEquals(EmptyListException.class, ex.getClass());
       assertEquals("Não existem endereços cadastrados!", ex.getMessage());
     }
-  }
-
-  @Test
-  void whenConverterPageEnderecoEmPageEnderecoResponseDTOThenReturnSuccess() {
-    var response = enderecoService.converterPageEnderecoEmPageEnderecoResponseDTO(enderecoPage);
-
-    assertNotNull(response);
-    assertEquals(PageImpl.class, response.getClass());
-    response.forEach(e -> {
-      assertNotNull(e);
-      assertEquals(EnderecoResponseDTO.class, e.getClass());
-      assertEquals(ID, e.getId());
-    });
-  }
-
-  @Test
-  void whenCriarLinksHateoasPageEnderecoResponseDTOThenReturnSuccess() {
-    enderecoService.criarLinksHateoasPageEnderecoResponseDTO(enderecoResponseDTOPage, enderecoPage);
-
-    /*
-    The method call take all EnderecoResponseDTO passed in this page and added the Selfrel HATEOAS link for each one of them.
-    The residents HATEOAS link is not being validating
-    */
-    enderecoResponseDTOPage.forEach(e -> {
-      assertNotNull(e);
-      assertEquals("</api/enderecos/1>;rel=\"self\"", e.getLinks().toString());
-    });
   }
 
   @Test
@@ -251,24 +171,6 @@ class EnderecoServiceImplTest {
     assertEquals(ID ,response.getBody().getId());
     // We are not validating residents HATEOAS links
     assertEquals("</api/enderecos/1>;rel=\"self\"", response.getBody().getLinks().toString());
-  }
-
-  @Test
-  void whenAtualizarEnderecoESalvarThenReturnSuccess() {
-    when(repository.save(any(Endereco.class))).thenReturn(endereco);
-
-    var response = enderecoService.atualizarEnderecoESalvar(enderecoRequestDTO,
-            Collections.singletonList(pessoa),
-            ID);
-
-    // Simulating the method line that add a person list of the parameter in the address
-    response.setPessoas(Collections.singletonList(pessoa));
-
-    assertNotNull(response);
-    assertEquals(Endereco.class, response.getClass());
-    assertEquals(ID, response.getId());
-    assertNotNull(response.getPessoas());
-    assertEquals(ID, response.getPessoas().get(0).getId());
   }
 
   @Test
@@ -313,12 +215,6 @@ class EnderecoServiceImplTest {
   }
 
   private void initializeTestsEntities() {
-    pessoa = Pessoa.builder()
-            .id(ID)
-            .nome("Nome Test")
-            .sexo("MASCULINO")
-            .build();
-
     endereco = Endereco.builder()
             .id(ID)
             .logradouro(LOGRADOURO)
@@ -339,9 +235,6 @@ class EnderecoServiceImplTest {
     pageable = PageRequest.of(0, 10);
     List<Endereco> enderecos = Collections.singletonList(endereco);
     enderecoPage = new PageImpl<>(enderecos, pageable, enderecos.size());
-
-    List<EnderecoResponseDTO> enderecoResponseDTOS = Collections.singletonList(enderecoResponseDTO);
-    enderecoResponseDTOPage = new PageImpl<>(enderecoResponseDTOS, pageable, enderecoResponseDTOS.size());
 
     List<EntityModel<EnderecoResponseDTO>> entityModels = new ArrayList<>();
     EntityModel<EnderecoResponseDTO> entityModel = EntityModel.of(enderecoResponseDTO);

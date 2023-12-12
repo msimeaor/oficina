@@ -76,60 +76,22 @@ class TelefoneServiceImplTest {
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
     assertEquals(TelefoneResponseDTO.class, Objects.requireNonNull(response.getBody()).getClass());
 
-    assertEquals(ID ,response.getBody().getId());
+    assertEquals(ID, response.getBody().getId());
     assertEquals(NUMERO, response.getBody().getNumero());
     assertEquals("</api/telefones/1>;rel=\"self\",</api/pessoas/1>;rel=\"Proprietário\"",
             response.getBody().getLinks().toString());
   }
 
   @Test
-  void whenValidarNumeroThenReturnTelefoneConflictException() {
-    when(repository.findByNumero(anyString())).thenReturn(telefone);
+  void whenSaveThenReturnTelefoneConflictException() {
+    when(repository.findByNumero(any(String.class))).thenReturn(telefone);
 
     try {
-      telefoneService.validarNumero(NUMERO);
-
+      telefoneService.save(telefoneRequestDTO);
     } catch (Exception ex) {
-      assertNotNull(ex);
       assertEquals(TelefoneConflictException.class, ex.getClass());
       assertEquals("Numero já cadastrado!", ex.getMessage());
     }
-  }
-
-  @Test
-  void whenCriarTelefoneESalvarThenReturnSuccess() {
-    when(repository.save(any(Telefone.class))).thenReturn(telefone);
-
-    var response = telefoneService.criarTelefoneESalvar(telefoneRequestDTO, pessoa);
-
-    assertNotNull(response);
-    assertEquals(Telefone.class, response.getClass());
-    assertEquals(ID, response.getId());
-    assertNotNull(response.getPessoa());
-    assertEquals(pessoa.getId(), response.getPessoa().getId());
-  }
-
-  @Test
-  void whenCriarTelefoneResponseDTOThenReturnSuccess() {
-    var response = telefoneService.criarTelefoneResponseDTO(telefone);
-
-    assertNotNull(response);
-    assertEquals(TelefoneResponseDTO.class, response.getClass());
-    assertEquals(telefone.getId(), response.getId());
-  }
-
-  @Test
-  void whenCriarLinkHateoasSelfrelThenReturnSuccess() {
-    telefoneService.criarLinkHateoasSelfrel(telefoneResponseDTO);
-
-    assertEquals("</api/telefones/1>;rel=\"self\"", telefoneResponseDTO.getLinks().toString());
-  }
-
-  @Test
-  void whenCriarLinkHateoasProprietarioThenReturnSuccess() {
-    telefoneService.criarLinkHateoasProprietario(telefoneResponseDTO, telefone);
-
-    assertEquals("</api/pessoas/1>;rel=\"Proprietário\"", telefoneResponseDTO.getLinks().toString());
   }
 
   @Test
@@ -146,31 +108,6 @@ class TelefoneServiceImplTest {
     // taking into account that the returned phone has this person on your person list
     assertEquals("</api/telefones/1>;rel=\"self\",</api/pessoas/1>;rel=\"Proprietário\"",
             response.getBody().getLinks().toString());
-  }
-
-  @Test
-  void whenBuscarTelefoneThenReturnSuccess() {
-    when(repository.findById(anyLong())).thenReturn(Optional.of(telefone));
-
-    var response = telefoneService.buscarTelefone(ID);
-
-    assertNotNull(response);
-    assertEquals(Telefone.class, response.getClass());
-    assertEquals(ID, response.getId());
-  }
-
-  @Test
-  void whenBuscarTelefoneThenReturnTelefoneNotFoundException() {
-    when(repository.findById(anyLong())).thenReturn(Optional.empty());
-
-    try {
-      telefoneService.buscarTelefone(2L);
-
-    } catch (Exception ex) {
-      assertNotNull(ex);
-      assertEquals(TelefoneNotFoundException.class, ex.getClass());
-      assertEquals("Telefone não encontrado! ID: " + 2L, ex.getMessage());
-    }
   }
 
   @Test
@@ -201,45 +138,15 @@ class TelefoneServiceImplTest {
   }
 
   @Test
-  void whenCriarPageTelefoneThenReturnSuccess() {
-    when(repository.findAll(any(Pageable.class))).thenReturn(telefonePage);
-
-    var response = telefoneService.criarPageTelefone(pageable);
-
-    assertNotNull(response);
-    assertEquals(PageImpl.class, response.getClass());
-    response.forEach(t -> {
-      assertNotNull(t);
-      assertEquals(Telefone.class, t.getClass());
-      assertEquals(ID, t.getId());
-    });
-  }
-
-  @Test
-  void whenCriarPageTelefoneThenReturnEmptyListException() {
+  void whenFindAllThenReturnEmptyListException() {
     when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
     try {
-      telefoneService.criarPageTelefone(pageable);
-
+      telefoneService.findAll(pageable);
     } catch (Exception ex) {
-      assertNotNull(ex);
       assertEquals(EmptyListException.class, ex.getClass());
       assertEquals("Não existem telefones cadastrados!", ex.getMessage());
     }
-  }
-
-  @Test
-  void whenCriarPageTelefoneResponseDTOThenReturnSuccess() {
-    var response = telefoneService.criarPageTelefoneResponseDTO(telefonePage);
-
-    assertNotNull(response);
-    assertEquals(PageImpl.class, response.getClass());
-    response.forEach(t -> {
-      assertNotNull(t);
-      assertEquals(TelefoneResponseDTO.class, t.getClass());
-      assertEquals(ID, t.getId());
-    });
   }
 
   @Test
@@ -260,18 +167,6 @@ class TelefoneServiceImplTest {
     assertEquals("02000000000", response.getBody().getNumero());
     // This person id was passed in TelefoneRequestDTO.pessoaId, so he must be present in Telefone.pessoa
     assertEquals(pessoa.getId(), telefone.getPessoa().getId());
-  }
-
-  @Test
-  void whenAtualizarDadosTelefoneThenReturnSuccess() {
-    when(repository.save(any(Telefone.class))).thenReturn(telefone);
-
-    var response = telefoneService.atualizarDadosTelefone(telefoneRequestDTO, pessoa, ID);
-
-    assertNotNull(response);
-    assertEquals(Telefone.class, response.getClass());
-    assertEquals(ID, response.getId());
-    assertEquals(pessoa.getId(), response.getPessoa().getId());
   }
 
   @Test
