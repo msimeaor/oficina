@@ -62,7 +62,7 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(pessoaResponseDTO, HttpStatus.CREATED);
   }
 
-  protected void validarCadastroExistente(String nome, String placa) {
+  private void validarCadastroExistente(String nome, String placa) {
     if (repository.findByNome(nome).isPresent() && veiculoRepository.findByPlaca(placa).isPresent())
       throw new PessoaConflictException("Cliente já cadastrado!");
   }
@@ -107,7 +107,7 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }
 
-  protected Page<Pessoa> criarPagePessoa(Pageable pageable) {
+  private Page<Pessoa> criarPagePessoa(Pageable pageable) {
     Page<Pessoa> pessoaPage = repository.findAll(pageable);
     if (pessoaPage.isEmpty())
       throw new EmptyListException("Não existem clientes cadastrados!");
@@ -115,7 +115,7 @@ public class PessoaServiceImpl {
     return pessoaPage;
   }
 
-  protected Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
+  private Page<PessoaResponseDTO> converterPagePessoaEmPagePessoaResponseDTO(Page<Pessoa> pessoaPage) {
     return pessoaPage.map(this::criarPessoaResponseDTO);
   }
 
@@ -139,7 +139,7 @@ public class PessoaServiceImpl {
   }
 
   public ResponseEntity<PagedModel<EntityModel<PessoaResponseDTO>>> findByNomeLike( String nome, Pageable pageable ) {
-    Page<Pessoa> pessoaPage = repository.findByNomeLike("%" + nome + "%", pageable);
+    Page<Pessoa> pessoaPage = criarPagePessoaComFindByNomeLike(nome, pageable);
     validarPageSize(pessoaPage);
     Page<PessoaResponseDTO> pessoaResponseDTOS = converterPagePessoaEmPagePessoaResponseDTO(pessoaPage);
     pessoaResponseDTOS.forEach(this::criarLinksHateoasDePessoaResponseDTO);
@@ -150,17 +150,14 @@ public class PessoaServiceImpl {
     return new ResponseEntity<>(assembler.toModel(pessoaResponseDTOS, link), HttpStatus.OK);
   }
 
-  protected void validarPageSize(Page<Pessoa> pessoaPage) {
+  private void validarPageSize(Page<Pessoa> pessoaPage) {
     if (pessoaPage.isEmpty())
       throw new EmptyListException("Não existem clientes cadastrados que tenham esse nome!");
   }
 
-  protected Page<Pessoa> criarPagePessoaComFindByNomeLike(String nome, Pageable pageable) {
-    Page<Pessoa> pessoaPage = repository.findByNomeLike(nome, pageable);
-    if (pessoaPage.isEmpty())
-      throw new EmptyListException("Não existem clientes cadastrados!");
-
-    return pessoaPage;
+  private Page<Pessoa> criarPagePessoaComFindByNomeLike(String nome, Pageable pageable) {
+    nome = "%" + nome + "%";
+    return repository.findByNomeLike(nome, pageable);
   }
 
 }

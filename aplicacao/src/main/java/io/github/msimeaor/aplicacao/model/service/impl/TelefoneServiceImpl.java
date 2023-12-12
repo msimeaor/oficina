@@ -56,32 +56,32 @@ public class TelefoneServiceImpl implements TelefoneService {
     return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.CREATED);
   }
 
-  protected void validarNumero(String numero) {
+  private void validarNumero(String numero) {
     if (repository.findByNumero(numero) != null)
       throw new TelefoneConflictException("Numero já cadastrado!");
   }
 
-  protected Telefone criarTelefoneESalvar(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa) {
+  private Telefone criarTelefoneESalvar(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa) {
     Telefone telefone = DozerMapper.parseObject(telefoneRequestDTO, Telefone.class);
     telefone.setPessoa(pessoa);
     return repository.save(telefone);
   }
 
-  protected TelefoneResponseDTO criarTelefoneResponseDTO(Telefone telefone) {
+  private TelefoneResponseDTO criarTelefoneResponseDTO(Telefone telefone) {
     return DozerMapper.parseObject(telefone, TelefoneResponseDTO.class);
   }
 
-  protected void criarLinksHateoasSelfRelEProprietario(TelefoneResponseDTO telefoneResponse, Telefone telefone) {
+  private void criarLinksHateoasSelfRelEProprietario(TelefoneResponseDTO telefoneResponse, Telefone telefone) {
     criarLinkHateoasSelfrel(telefoneResponse);
     criarLinkHateoasProprietario(telefoneResponse, telefone);
   }
 
-  protected void criarLinkHateoasSelfrel(TelefoneResponseDTO telefoneResponseDTO) {
+  private void criarLinkHateoasSelfrel(TelefoneResponseDTO telefoneResponseDTO) {
     telefoneResponseDTO.add(linkTo(methodOn(TelefoneRestController.class)
             .findById(telefoneResponseDTO.getId())).withSelfRel());
   }
 
-  protected void criarLinkHateoasProprietario(TelefoneResponseDTO telefoneResponseDTO, Telefone telefone) {
+  private void criarLinkHateoasProprietario(TelefoneResponseDTO telefoneResponseDTO, Telefone telefone) {
     telefoneResponseDTO.add(linkTo(methodOn(PessoaRestController.class)
             .findById(telefone.getPessoa().getId())).withRel("Proprietário"));
   }
@@ -94,7 +94,7 @@ public class TelefoneServiceImpl implements TelefoneService {
     return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.OK);
   }
 
-  protected Telefone buscarTelefone(Long id) {
+  private Telefone buscarTelefone(Long id) {
     return repository.findById(id)
             .orElseThrow(() -> new TelefoneNotFoundException("Telefone não encontrado! ID: " + id));
   }
@@ -109,7 +109,7 @@ public class TelefoneServiceImpl implements TelefoneService {
     return new ResponseEntity<>(assembler.toModel(telefoneResponseDTOS, link), HttpStatus.OK);
   }
 
-  protected Page<Telefone> criarPageTelefone(Pageable pageable) {
+  private Page<Telefone> criarPageTelefone(Pageable pageable) {
     Page<Telefone> telefonePage = repository.findAll(pageable);
     if (telefonePage.isEmpty())
       throw new EmptyListException("Não existem telefones cadastrados!");
@@ -117,13 +117,13 @@ public class TelefoneServiceImpl implements TelefoneService {
     return telefonePage;
   }
 
-  protected Page<TelefoneResponseDTO> criarPageTelefoneResponseDTO(Page<Telefone> telefonePage) {
+  private Page<TelefoneResponseDTO> criarPageTelefoneResponseDTO(Page<Telefone> telefonePage) {
     return telefonePage.map(
             telefone -> DozerMapper.parseObject(telefone, TelefoneResponseDTO.class)
     );
   }
 
-  protected void iterarTelefoneResponseDTOECriarLinksHateoas(Page<TelefoneResponseDTO> telefoneResponseDTOS,
+  private void iterarTelefoneResponseDTOECriarLinksHateoas(Page<TelefoneResponseDTO> telefoneResponseDTOS,
                                                              Page<Telefone> telefonePage) {
 
     telefoneResponseDTOS.forEach(telefoneResponse -> {
@@ -147,7 +147,7 @@ public class TelefoneServiceImpl implements TelefoneService {
     return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.OK);
   }
 
-  protected Telefone atualizarDadosTelefone(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa, Long id) {
+  private Telefone atualizarDadosTelefone(TelefoneRequestDTO telefoneRequestDTO, Pessoa pessoa, Long id) {
     Telefone telefone = DozerMapper.parseObject(telefoneRequestDTO, Telefone.class);
     telefone.setId(id);
     telefone.setPessoa(pessoa);
@@ -162,7 +162,7 @@ public class TelefoneServiceImpl implements TelefoneService {
     return new ResponseEntity<>(telefoneResponseDTO, HttpStatus.OK);
   }
 
-  protected Telefone buscarTelefonePorNumero(String numero) {
+  private Telefone buscarTelefonePorNumero(String numero) {
     Telefone telefone = repository.findByNumero(numero);
     if (telefone == null)
       throw new TelefoneNotFoundException("Telefone não encontrado! Numero: " + numero);
