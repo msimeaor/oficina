@@ -1,6 +1,7 @@
 package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.exceptions.servico.ServiceConflictException;
+import io.github.msimeaor.aplicacao.exceptions.servico.ServicoNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.ServicoRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.ServicoResponseDTO;
@@ -48,6 +49,18 @@ public class ServicoServiceImpl implements ServicoService {
 
   private ServicoResponseDTO converterServicoEmServicoResponseDTO(Servico servico) {
     return DozerMapper.parseObject(servico, ServicoResponseDTO.class);
+  }
+
+  public ResponseEntity<ServicoResponseDTO> findById(Long id) {
+    Servico servico = buscarServico(id);
+    ServicoResponseDTO servicoResponseDTO = converterServicoEmServicoResponseDTO(servico);
+
+    return new ResponseEntity<>(servicoResponseDTO, HttpStatus.OK);
+  }
+
+  private Servico buscarServico(Long id) {
+    return repository.findById(id)
+            .orElseThrow(() -> new ServicoNotFoundException("Serviço não encontrado! ID: " +id));
   }
 
 }
