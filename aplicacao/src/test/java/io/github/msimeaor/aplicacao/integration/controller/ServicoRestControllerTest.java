@@ -27,6 +27,7 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
   private static RequestSpecification specification;
   private static ObjectMapper mapper;
   private static ServicoRequestDTOTest servicoRequestDTOTest;
+  private static ServicoRequestDTOTest servicoRequestDTOTestUpdated;
 
   private static final String REQUEST_BASE_PATH = "api/servicos";
 
@@ -158,10 +159,38 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
     ));
   }
 
+  @Test
+  @Order(6)
+  void update() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath(REQUEST_BASE_PATH)
+            .body(servicoRequestDTOTestUpdated)
+            .pathParam("id", 1L)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var response = mapper.readValue(content, ServicoResponseDTOTest.class);
+
+    assertNotNull(response);
+    assertEquals("Serviço Teste", response.getNome());
+    assertEquals(1L, response.getId());
+    assertEquals(BigDecimal.valueOf(20000, 2), response.getValor());
+  }
+
   public static void startTestEntities() {
     servicoRequestDTOTest = ServicoRequestDTOTest.builder()
             .nome("Serviço Teste")
             .valor(BigDecimal.valueOf(10000, 2))
+            .build();
+
+    servicoRequestDTOTestUpdated = ServicoRequestDTOTest.builder()
+            .nome("Serviço Teste")
+            .valor(BigDecimal.valueOf(20000, 2))
             .build();
   }
 }
