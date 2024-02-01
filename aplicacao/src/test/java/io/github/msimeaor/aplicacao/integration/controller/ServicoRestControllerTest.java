@@ -61,13 +61,36 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(ServicoResponseDTOTest.class, response.getClass());
     assertEquals(1, response.getId());
     assertEquals("Serviço Teste", response.getNome());
-    assertEquals(BigDecimal.ONE, response.getValor());
+    assertEquals(BigDecimal.valueOf(10000, 2), response.getValor());
+    System.out.println(response.getValor());
+  }
+
+  @Test
+  @Order(3)
+  void findById() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath(REQUEST_BASE_PATH)
+            .pathParam("id", "1")
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var response = mapper.readValue(content, ServicoResponseDTOTest.class);
+
+    assertEquals(ServicoResponseDTOTest.class, response.getClass());
+    assertEquals(1L, response.getId());
+    assertEquals("Serviço Teste", response.getNome());
+    assertEquals(BigDecimal.valueOf(10000, 2), response.getValor());
   }
 
   public static void startTestEntities() {
     servicoRequestDTOTest = ServicoRequestDTOTest.builder()
             .nome("Serviço Teste")
-            .valor(BigDecimal.ONE)
+            .valor(BigDecimal.valueOf(10000, 2))
             .build();
   }
 }
