@@ -62,7 +62,6 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(1, response.getId());
     assertEquals("Serviço Teste", response.getNome());
     assertEquals(BigDecimal.valueOf(10000, 2), response.getValor());
-    System.out.println(response.getValor());
   }
 
   @Test

@@ -1,5 +1,7 @@
 package io.github.msimeaor.aplicacao.model.service.impl;
 
+import io.github.msimeaor.aplicacao.controller.ServicoRestController;
+import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.servico.ServiceConflictException;
 import io.github.msimeaor.aplicacao.exceptions.servico.ServicoNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
@@ -8,7 +10,14 @@ import io.github.msimeaor.aplicacao.model.dto.response.ServicoResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Servico;
 import io.github.msimeaor.aplicacao.model.repository.ServicoRepository;
 import io.github.msimeaor.aplicacao.model.service.ServicoService;
+import io.github.msimeaor.aplicacao.model.utilities.HateoasLinkBuilder;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,9 +26,13 @@ import org.springframework.stereotype.Service;
 public class ServicoServiceImpl implements ServicoService {
 
   private ServicoRepository repository;
+  private PagedResourcesAssembler<ServicoResponseDTO> assembler;
 
-  public ServicoServiceImpl(ServicoRepository repository) {
+  public ServicoServiceImpl(ServicoRepository repository,
+                            PagedResourcesAssembler<ServicoResponseDTO> assembler) {
+
     this.repository = repository;
+    this.assembler = assembler;
   }
 
   @Transactional
@@ -61,6 +74,32 @@ public class ServicoServiceImpl implements ServicoService {
   private Servico buscarServico(Long id) {
     return repository.findById(id)
             .orElseThrow(() -> new ServicoNotFoundException("Serviço não encontrado! ID: " +id));
+  }
+
+  public ResponseEntity<PagedModel<EntityModel<ServicoResponseDTO>>> findByNome(String nome, Pageable pageable) {
+    Page<Servico> servicoPage = criarPageServico(nome, pageable);
+    validarPageServico(servicoPage);
+    Page<ServicoResponseDTO> servicoResponseDTOPage = converterPageServicoEmPageServicoResponseDTO(servicoPage);
+
+    Link link = new HateoasLinkBuilder()
+            .gerarLinkFiltrando(ServicoRestController.class, "findByNome", nome);
+
+    return new ResponseEntity<>(assembler.toModel(servicoResponseDTOPage, link), HttpStatus.OK);
+  }
+
+  private Page<Servico> criarPageServico(String nome, Pageable pageable) {
+    nome = "%" + nome + "%";
+    return repository.findByNome(nome, pageable);
+  }
+
+  private void validarPageServico(Page<Servico> servicoPage) {
+    if (servicoPage.isEmpty()) {
+      throw new EmptyListException("Não existem serviços com este nome!");
+    }
+  }
+
+  private Page<ServicoResponseDTO> converterPageServicoEmPageServicoResponseDTO(Page<Servico> servicoPage) {
+    return servicoPage.map(this::converterServicoEmServicoResponseDTO);
   }
 
 }
