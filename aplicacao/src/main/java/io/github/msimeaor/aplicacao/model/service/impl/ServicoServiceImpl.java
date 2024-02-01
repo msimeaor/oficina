@@ -2,7 +2,7 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.controller.ServicoRestController;
 import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
-import io.github.msimeaor.aplicacao.exceptions.servico.ServiceConflictException;
+import io.github.msimeaor.aplicacao.exceptions.servico.ServicoConflictException;
 import io.github.msimeaor.aplicacao.exceptions.servico.ServicoNotFoundException;
 import io.github.msimeaor.aplicacao.mapper.DozerMapper;
 import io.github.msimeaor.aplicacao.model.dto.request.ServicoRequestDTO;
@@ -38,7 +38,7 @@ public class ServicoServiceImpl implements ServicoService {
   @Transactional
   public ResponseEntity<ServicoResponseDTO> save(ServicoRequestDTO servicoRequestDTO) {
     if (nomeServicoJaCadastrado(servicoRequestDTO.getNome())) {
-      throw new ServiceConflictException("Serviço já cadastrado!");
+      throw new ServicoConflictException("Serviço já cadastrado!");
     }
 
     Servico servico = converterServicoRequestDTOEmServico(servicoRequestDTO);
