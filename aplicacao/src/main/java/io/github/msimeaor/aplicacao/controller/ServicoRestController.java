@@ -46,4 +46,17 @@ public class ServicoRestController {
     return servicoService.findByNome(nome, pageable);
   }
 
+  @GetMapping()
+  public ResponseEntity<PagedModel<EntityModel<ServicoResponseDTO>>> findAll(
+          @RequestParam(name = "page", defaultValue = "0", required = false) Integer page,
+          @RequestParam(name = "size", defaultValue = "5", required = false) Integer size,
+          @RequestParam(name = "direction", defaultValue = "ASC", required = false) String direction
+  ) {
+
+    var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, "nome"));
+
+    return servicoService.findAll(pageable);
+  }
+
 }

@@ -12,5 +12,6 @@ public interface ServicoService {
   ResponseEntity<ServicoResponseDTO> save(ServicoRequestDTO servicoRequestDTO);
   ResponseEntity<ServicoResponseDTO> findById(Long id);
   ResponseEntity<PagedModel<EntityModel<ServicoResponseDTO>>> findByNome(String nome, Pageable pageable);
+  ResponseEntity<PagedModel<EntityModel<ServicoResponseDTO>>> findAll(Pageable pageable);
 
 }

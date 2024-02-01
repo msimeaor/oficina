@@ -88,18 +88,32 @@ public class ServicoServiceImpl implements ServicoService {
   }
 
   private Page<Servico> criarPageServico(String nome, Pageable pageable) {
-    nome = "%" + nome + "%";
-    return repository.findByNome(nome, pageable);
+    if (nome != null) {
+      nome = "%" + nome + "%";
+      return repository.findByNome(nome, pageable);
+    }
+
+    return repository.findAll(pageable);
   }
 
   private void validarPageServico(Page<Servico> servicoPage) {
     if (servicoPage.isEmpty()) {
-      throw new EmptyListException("Não existem serviços com este nome!");
+      throw new EmptyListException("Não existem serviços cadastrados!");
     }
   }
 
   private Page<ServicoResponseDTO> converterPageServicoEmPageServicoResponseDTO(Page<Servico> servicoPage) {
     return servicoPage.map(this::converterServicoEmServicoResponseDTO);
+  }
+
+  public ResponseEntity<PagedModel<EntityModel<ServicoResponseDTO>>> findAll(Pageable pageable) {
+    Page<Servico> servicoPage = criarPageServico(null, pageable);
+    validarPageServico(servicoPage);
+    Page<ServicoResponseDTO> servicoResponseDTOPage = converterPageServicoEmPageServicoResponseDTO(servicoPage);
+
+    Link link = new HateoasLinkBuilder().gerarLink(ServicoRestController.class, "findAll");
+
+    return new ResponseEntity<>(assembler.toModel(servicoResponseDTOPage, link), HttpStatus.OK);
   }
 
 }
