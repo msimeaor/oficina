@@ -59,4 +59,11 @@ public class ServicoRestController {
     return servicoService.findAll(pageable);
   }
 
+  @PutMapping("/{id}")
+  public ResponseEntity<ServicoResponseDTO> update(@RequestBody @Valid ServicoRequestDTO servicoRequestDTO,
+                                                   @PathVariable("id") Long id) {
+
+    return servicoService.update(servicoRequestDTO, id);
+  }
+
 }

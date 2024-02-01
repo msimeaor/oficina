@@ -116,4 +116,18 @@ public class ServicoServiceImpl implements ServicoService {
     return new ResponseEntity<>(assembler.toModel(servicoResponseDTOPage, link), HttpStatus.OK);
   }
 
+  @Transactional
+  public ResponseEntity<ServicoResponseDTO> update(ServicoRequestDTO servicoRequestDTO, Long id) {
+    Servico servico = buscarServico(id);
+    servico = substituirValorDoServicoESalvar(servico, servicoRequestDTO);
+    ServicoResponseDTO servicoResponseDTO = converterServicoEmServicoResponseDTO(servico);
+
+    return new ResponseEntity<>(servicoResponseDTO, HttpStatus.OK);
+  }
+
+  private Servico substituirValorDoServicoESalvar(Servico servico, ServicoRequestDTO servicoRequestDTO) {
+    servico.setValor(servicoRequestDTO.getValor());
+    return repository.save(servico);
+  }
+
 }
