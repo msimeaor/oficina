@@ -124,6 +124,40 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
     ));
   }
 
+  @Test
+  @Order(5)
+  void findAll() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath(REQUEST_BASE_PATH)
+            .when()
+              .get()
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    ServicoWrapper servicoResponse = mapper.readValue(content, ServicoWrapper.class);
+    List<ServicoResponseDTOTest> servicoResponseDTOTestList = servicoResponse
+            .getServicoEmbedded().getServicoResponseDTOList();
+
+    assertNotNull(content);
+    assertNotNull(servicoResponseDTOTestList);
+    assertEquals(1L, servicoResponseDTOTestList.get(0).getId());
+    assertEquals("Serviço Teste", servicoResponseDTOTestList.get(0).getNome());
+    assertEquals(BigDecimal.valueOf(10000, 2), servicoResponseDTOTestList.get(0).getValor());
+
+    assertTrue(content.contains(
+            "\"page\":{\"size\":5,\"totalElements\":1,\"totalPages\":1,\"number\":0}"
+    ));
+    // As the list only contains one result, only the "self" link will be generated.
+    // If the list has more results, the "prev", "next", "last" link will be generated.
+    assertTrue(content.contains(
+            "\"_links\":{\"self\":{\"href\":\"http://localhost:8888/api/servicos{?page,size,direction}\"" +
+                    ",\"templated\":true}}"
+    ));
+  }
+
   public static void startTestEntities() {
     servicoRequestDTOTest = ServicoRequestDTOTest.builder()
             .nome("Serviço Teste")
