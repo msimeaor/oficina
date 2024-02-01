@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.msimeaor.aplicacao.config.TestConfigs;
 import io.github.msimeaor.aplicacao.integration.dto.request.ServicoRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.ServicoResponseDTOTest;
+import io.github.msimeaor.aplicacao.integration.helper.servico.ServicoWrapper;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static io.restassured.RestAssured.*;
@@ -84,6 +86,42 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(1L, response.getId());
     assertEquals("Serviço Teste", response.getNome());
     assertEquals(BigDecimal.valueOf(10000, 2), response.getValor());
+  }
+
+  @Test
+  @Order(4)
+  void findByName() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath(REQUEST_BASE_PATH + "/findByNome")
+            .pathParam("nome", "Serviço Teste")
+            .when()
+              .get("{nome}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    ServicoWrapper servicoResponse = mapper.readValue(content, ServicoWrapper.class);
+    List<ServicoResponseDTOTest> servicoResponseDTOTestList = servicoResponse
+            .getServicoEmbedded().getServicoResponseDTOList();
+
+    assertNotNull(content);
+    assertNotNull(servicoResponseDTOTestList);
+    assertEquals(1L, servicoResponseDTOTestList.get(0).getId());
+    assertEquals("Serviço Teste", servicoResponseDTOTestList.get(0).getNome());
+    assertEquals(BigDecimal.valueOf(10000, 2), servicoResponseDTOTestList.get(0).getValor());
+
+    assertTrue(content.contains(
+      "\"page\":{\"size\":5,\"totalElements\":1,\"totalPages\":1,\"number\":0}"
+    ));
+    // As the list only contains one result, only the "self" link will be generated.
+    // If the list has more results, the "prev", "next", "last" link will be generated.
+    // The "%C3%A7" snippet represents the "ç" character
+    assertTrue(content.contains(
+      "\"_links\":{\"self\":{\"href\":\"http://localhost:8888/api/servicos/findByNome/Servi%C3%A7o%20Teste{?page,size,direction}\"" +
+              ",\"templated\":true}}"
+    ));
   }
 
   public static void startTestEntities() {
