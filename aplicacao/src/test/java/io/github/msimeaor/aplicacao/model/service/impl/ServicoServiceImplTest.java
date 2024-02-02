@@ -1,6 +1,7 @@
 package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.exceptions.servico.ServicoConflictException;
+import io.github.msimeaor.aplicacao.exceptions.servico.ServicoNotFoundException;
 import io.github.msimeaor.aplicacao.model.dto.request.ServicoRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.ServicoResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Servico;
@@ -72,7 +73,31 @@ class ServicoServiceImplTest {
   }
 
   @Test
-  void findById() {
+  void whenFindByIdThenReturnSuccess() {
+    when(repository.findById(anyLong())).thenReturn(Optional.of(servico));
+
+    var response = servicoService.findById(1L);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK.value(), response.getStatusCode().value());
+    assertEquals(ServicoResponseDTO.class, response.getBody().getClass());
+    assertEquals(1L, response.getBody().getId());
+    assertEquals("Serviço Teste", response.getBody().getNome());
+    assertEquals(BigDecimal.valueOf(10000, 2), response.getBody().getValor());
+  }
+
+  @Test
+  void whenFindByIdThenReturnServicoNotFound() {
+    when(repository.findById(anyLong())).thenReturn(Optional.empty());
+
+    try {
+      servicoService.findById(2L);
+
+    } catch (Exception ex) {
+      assertNotNull(ex);
+      assertEquals(ServicoNotFoundException.class, ex.getClass());
+      assertEquals("Serviço não encontrado! ID: 2", ex.getMessage());
+    }
   }
 
   @Test
