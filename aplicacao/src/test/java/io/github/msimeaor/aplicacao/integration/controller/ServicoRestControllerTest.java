@@ -150,6 +150,28 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @Order(5)
+  void findByNameWithAnInvalidName() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath(REQUEST_BASE_PATH + "/findByNome")
+            .pathParam("nome", "Nome inválido")
+            .when()
+              .get("{nome}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    ExceptionResponse exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertNotNull(exceptionResponse);
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Não existem serviços cadastrados!", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/servicos/findByNome/Nome%20inv%C3%A1lido", exceptionResponse.getDetalhesErro());
+  }
+
+  @Test
   @Order(6)
   void findAll() throws JsonProcessingException {
     var content = given().spec(specification)
