@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.msimeaor.aplicacao.config.TestConfigs;
+import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.integration.dto.request.ServicoRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.ServicoResponseDTOTest;
 import io.github.msimeaor.aplicacao.integration.helper.servico.ServicoWrapper;
@@ -12,6 +13,7 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
@@ -68,8 +70,8 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @Order(3)
-  void findById() throws JsonProcessingException {
+  @Order(2)
+  void findByIdWithAValidID() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath(REQUEST_BASE_PATH)
             .pathParam("id", "1")
@@ -87,6 +89,28 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(1L, response.getId());
     assertEquals("Serviço Teste", response.getNome());
     assertEquals(BigDecimal.valueOf(10000, 2), response.getValor());
+  }
+
+  @Test
+  @Order(3)
+  void findByIdWithAnInvalidID() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath(REQUEST_BASE_PATH)
+            .pathParam("id", 2L)
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    ExceptionResponse exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertNotNull(exceptionResponse);
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Serviço não encontrado! ID: " + 2L, exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/servicos/2", exceptionResponse.getDetalhesErro());
   }
 
   @Test
@@ -126,7 +150,7 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @Order(5)
+  @Order(6)
   void findAll() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath(REQUEST_BASE_PATH)
@@ -160,7 +184,7 @@ class ServicoRestControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @Order(6)
+  @Order(7)
   void update() throws JsonProcessingException {
     var content = given().spec(specification)
             .basePath(REQUEST_BASE_PATH)
