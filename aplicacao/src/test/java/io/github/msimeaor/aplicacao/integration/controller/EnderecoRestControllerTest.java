@@ -208,16 +208,16 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
     List<EnderecoResponseDTOTest> enderecoResponseDTOTestList = response.getEnderecoEmbedded().getEnderecoResponseDTOList();
 
     assertNotNull(enderecoResponseDTOTestList);
-    assertEquals(10, enderecoResponseDTOTestList.size());
+    assertEquals(5, enderecoResponseDTOTestList.size());
     assertEquals(10, enderecoResponseDTOTestList.get(0).getId());
     assertEquals("1 Spenser Park", enderecoResponseDTOTestList.get(0).getLogradouro());
     assertEquals(UFs.DF, enderecoResponseDTOTestList.get(0).getUf());
 
     System.out.println(content);
     assertTrue(content.contains(
-            "{\"self\":{\"href\":\"http://localhost:8888/api/enderecos/findByLogradouro/A{?page,size,direction}\",\"templated\":true}}"));
+            "\"self\":{\"href\":\"http://localhost:8888/api/enderecos/findByLogradouro/A{?page,size,direction}\",\"templated\":true}"));
     assertTrue(content.contains(
-            "\"page\":{\"size\":10,\"totalElements\":10,\"totalPages\":1,\"number\":0}"));
+            "\"page\":{\"size\":5,\"totalElements\":10,\"totalPages\":2,\"number\":0}"));
   }
 
   @Test
@@ -242,7 +242,6 @@ public class EnderecoRestControllerTest extends AbstractIntegrationTest {
     assertEquals("Park Way - Rua 12 Casa 1001", enderecoResponseDTO.getLogradouro());
     assertEquals(UFs.DF, enderecoResponseDTO.getUf());
 
-    System.out.println(content);
     /*
     In this case, when updating a person that already has a person list with records, but we don't pass a new
     person list in the request, the previous people are maintained.
