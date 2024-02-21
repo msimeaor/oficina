@@ -2,8 +2,10 @@ package io.github.msimeaor.aplicacao.model.service.impl;
 
 import io.github.msimeaor.aplicacao.exceptions.servico.ServicoConflictException;
 import io.github.msimeaor.aplicacao.exceptions.servico.ServicoNotFoundException;
+import io.github.msimeaor.aplicacao.integration.dto.response.ServicoResponseDTOTest;
 import io.github.msimeaor.aplicacao.model.dto.request.ServicoRequestDTO;
 import io.github.msimeaor.aplicacao.model.dto.response.ServicoResponseDTO;
+import io.github.msimeaor.aplicacao.model.dto.response.TelefoneResponseDTO;
 import io.github.msimeaor.aplicacao.model.entity.Servico;
 import io.github.msimeaor.aplicacao.model.repository.ServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,11 +16,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -36,6 +45,10 @@ class ServicoServiceImplTest {
 
   private Servico servico;
   private ServicoRequestDTO servicoRequestDTO;
+  private ServicoResponseDTO servicoResponseDTO;
+  private Pageable pageable;
+  private Page<Servico> servicoPage;
+  private PagedModel<EntityModel<ServicoResponseDTO>> servicoPagedModel;
 
   @BeforeEach
   void setUp() {
@@ -101,7 +114,31 @@ class ServicoServiceImplTest {
   }
 
   @Test
-  void findByNome() {
+  void whenFindByNomeThenReturnSuccess() {
+    when(repository.findByNome(anyString(), any(Pageable.class))).thenReturn(servicoPage);
+    when(assembler.toModel(any(Page.class), any(Link.class)))
+            .thenReturn(servicoPagedModel);
+
+    var response = servicoService.findByNome("Serviço Teste", pageable);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(PagedModel.class, Objects.requireNonNull(response.getBody()).getClass());
+
+    response.getBody().getContent().forEach(e -> {
+      assertNotNull(e.getContent());
+      assertEquals(ServicoResponseDTO.class, e.getContent().getClass());
+      assertEquals(1L, e.getContent().getId());
+      assertEquals("Servico Teste", e.getContent().getNome());
+      assertEquals(BigDecimal.valueOf(10000, 2), e.getContent().getValor());
+    });
+
+    // Here I verify if pagination info of response are valid
+    assertNotNull(response.getBody().getMetadata());
+    assertEquals(0, response.getBody().getMetadata().getNumber());
+    assertEquals(1, response.getBody().getMetadata().getTotalPages());
+    assertEquals(1, response.getBody().getMetadata().getTotalElements());
+    assertEquals(1, response.getBody().getMetadata().getSize());
   }
 
   @Test
@@ -123,6 +160,23 @@ class ServicoServiceImplTest {
             .nome("Serviço Teste")
             .valor(BigDecimal.valueOf(10000, 2))
             .build();
+
+    servicoResponseDTO = ServicoResponseDTO.builder()
+            .id(1L)
+            .nome("Servico Teste")
+            .valor(BigDecimal.valueOf(10000, 2))
+            .build();
+
+    pageable = PageRequest.of(0, 5);
+    List<Servico> servicos = Collections.singletonList(servico);
+    servicoPage = new PageImpl<>(servicos, pageable, servicos.size());
+
+    List<EntityModel<ServicoResponseDTO>> entityModels = new ArrayList<>();
+    EntityModel<ServicoResponseDTO> entityModel = EntityModel.of(servicoResponseDTO);
+    entityModels.add(entityModel);
+    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(entityModels.size(),
+            0, entityModels.size());
+    servicoPagedModel = PagedModel.of(entityModels, pageMetadata);
   }
 
 }
