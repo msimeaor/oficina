@@ -171,6 +171,17 @@ class ServicoServiceImplTest {
 
   @Test
   void update() {
+    // Object that simulates the new service with the value updated
+    servicoRequestDTO.setValor(BigDecimal.valueOf(20000, 2));
+
+    when(repository.findById(any(Long.class))).thenReturn(Optional.of(servico));
+    when(repository.save(any(Servico.class))).thenReturn(servico);
+
+    var response = servicoService.update(servicoRequestDTO, 1L);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK.value(), response.getStatusCode().value());
+    assertEquals(BigDecimal.valueOf(20000, 2), response.getBody().getValor());
   }
 
   public void startTestEntities() {
