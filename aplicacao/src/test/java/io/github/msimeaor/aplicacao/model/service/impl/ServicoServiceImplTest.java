@@ -142,7 +142,31 @@ class ServicoServiceImplTest {
   }
 
   @Test
-  void findAll() {
+  void whenFindAllThenReturnSuccess() {
+    when(repository.findAll(any(Pageable.class))).thenReturn(servicoPage);
+    when(assembler.toModel(any(Page.class), any(Link.class)))
+            .thenReturn(servicoPagedModel);
+
+    var response = servicoService.findAll(pageable);
+
+    assertNotNull(response);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(PagedModel.class, Objects.requireNonNull(response.getBody()).getClass());
+
+    response.getBody().getContent().forEach(e -> {
+      assertNotNull(e.getContent());
+      assertEquals(ServicoResponseDTO.class, e.getContent().getClass());
+      assertEquals(1L, e.getContent().getId());
+      assertEquals("Servico Teste", e.getContent().getNome());
+      assertEquals(BigDecimal.valueOf(10000, 2), e.getContent().getValor());
+    });
+
+    // Here I verify if pagination info of response are valid
+    assertNotNull(response.getBody().getMetadata());
+    assertEquals(0, response.getBody().getMetadata().getNumber());
+    assertEquals(1, response.getBody().getMetadata().getTotalPages());
+    assertEquals(1, response.getBody().getMetadata().getTotalElements());
+    assertEquals(1, response.getBody().getMetadata().getSize());
   }
 
   @Test
