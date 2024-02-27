@@ -109,3 +109,23 @@ and search. If there are records with the same name, the API return a list with 
 ![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindByNome_Endpoint_RequestParams.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindByNome_Endpoint_Success.png)
+
+---
+
+### Atualizando dados de uma pessoa (Update a person's data) "/api/pessoas/{id}"
+
+Este é o utlimo endpoint do controller de pessoas. Ele é chamado quando o usuário faz uma requisição para mudar 
+os dados cadastrais de uma pessoa. Esses dados podem ser pessoais ou até o endereço.
+Esse endpoint recebe um ID que será o ID da pessoa que vai ser atualizada e um objeto que contém os dados já atualizados.
+A API vai verificar se existe a pessoa com o ID passado. Se existir, os dados dela são atualizados, se não, a API lança 
+um 404 NOT FOUND dizendo que não existem clientes com o ID passado.
+
+*-> This is the last endpoint of the Pessoa controller. It is called when the user makes a request to update a person's
+registration data. This data can be personal or even the address. This endpoint receives an ID that will be the person ID 
+who will be updated and an object that contains the already updated data. The API will check if the person with the given 
+ID exists. If yes, its data is updated, if not, the API thown a 404 NOT FOUND saying that there are no customers with 
+the given ID*
+
+![ ](aplicacao/src/main/resources/documentation.images/Pessoa_Update_Endpoint_PathParam.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Pessoa_Update_Endpoint_Success_Response.png)
