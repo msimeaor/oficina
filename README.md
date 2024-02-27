@@ -74,3 +74,23 @@ a 404 NOT FOUND will be returned with the same object that was returned in the 4
 updated details.*
 
 ![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindById_Endpoint_Success_Response.png)
+
+---
+
+### Buscando todas as pessoas (Find all people) "/api/pessoas"
+
+Esse é o endpoint usado para buscar todas as pessoas cadastradas no banco de dados.
+Ao ser chamado ele retorna uma lista paginada e cada página contém, no máximo, 5 resultados (clientes).
+Ao final de cada página existem links HATEOAS para navegação pelas páginas, podendo ir para a próxima, anterior, ultima
+e primeira página.
+Se não existir nenhum registro no banco de dados, a API retorna um 404 NOT FOUND.
+
+*-> This is the endpoint used to find all people registered in the database.
+When called it returns a paginated list and each page contains a maximum of 5 records (customers).
+At the end of each page exists HATEOAS links to navigation between the pages, being able to go to next, previous, last and 
+first page.
+If not exists any records in the database, the API returns a 404 NOT FOUND*
+
+![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindAll_Endpoint_RequestParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindAll_Endpoint_Success_Response.png)
