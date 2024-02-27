@@ -94,3 +94,18 @@ If not exists any records in the database, the API returns a 404 NOT FOUND*
 ![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindAll_Endpoint_RequestParams.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindAll_Endpoint_Success_Response.png)
+
+---
+
+### Buscando pessoa pelo nome (Find a person by name) "/api/pessoas/findByNome/{nome}"
+
+Esse é o endpoint usado para buscar uma ou mais pessoas pessoas pelo nome. O usuário digita uma parte do nome ou o nome 
+completo e faz a busca. Se houverem registros com nome igual, a API retorna uma lista com todos.
+Se não, um 404 NOT FOUND é lançado.
+
+*-> This is the endpoint used to search one or more people by name. The user types a part of the name or the full name 
+and search. If there are records with the same name, the API return a list with all. If not, a 404 NOT FOUND is thrown*
+
+![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindByNome_Endpoint_RequestParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindByNome_Endpoint_Success.png)
