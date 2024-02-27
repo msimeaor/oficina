@@ -29,7 +29,7 @@ Este é o primeiro controller que irei explicar. A imagem abaixo mostra todos os
 
 ### Salvando novo cliente (Saving a new customer) "/api/pessoas/{placa}"
 
-Este endpoint POST recebe um request param (placa do carro) e um objeto no corpo da requisição.
+Este endpoint POST recebe um path param (placa do carro) e um objeto no corpo da requisição.
 A API vai validar os valores do objeto usando a biblioteca Jakarta.validation.constraints e validar a placa do carro
 A logica para salvar o cliente é: Se houver um cliente no banco de dados que tenha o mesmo nome (nome completo) que o
 cliente que está sendo salvo e se houver um veiculo no banco de dados que contenha a mesma placa que foi passada
@@ -58,3 +58,19 @@ customer is saved with success*
 ![ ](aplicacao/src/main/resources/documentation.images/Pessoa_Save_Endpoint_Success_Response.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Pessoa_Save_Endpoint_Conflict_Response.png)
+
+---
+
+### Buscando cliente pelo ID (Find a customer by ID) "/api/pessoas/{id}"
+
+Ao chamar esse endpoint, o usuário passa o ID em um path param.
+A API vai buscar um cliente no banco de dados que tenha esse mesmo ID. Se achar, retorna os dados do cliente, caso
+contrário, um 404 NOT FOUND será retornado com o mesmo objeto que foi retornado no 409 do endpoint anterior, mas com
+os detalhes atualizados.
+
+*-> When calling this endpoint, the user passes the ID in a path param.
+The API will search for a customer in the database that has the same ID. If found, return the customer data, otherwise, 
+a 404 NOT FOUND will be returned with the same object that was returned in the 409 of the previous endpoint, but with the
+updated details.*
+
+![ ](aplicacao/src/main/resources/documentation.images/Pessoa_FindById_Endpoint_Success_Response.png)
