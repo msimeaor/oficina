@@ -129,3 +129,28 @@ the given ID*
 ![ ](aplicacao/src/main/resources/documentation.images/Pessoa_Update_Endpoint_PathParam.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Pessoa_Update_Endpoint_Success_Response.png)
+
+## Outros controllers (Other controllers)
+
+Como o intuito do README é oferecer um passo a passo de como usar a API, para os próximos controllers, deixarei apenas as fotos 
+e um tópico explicando os path params que são passados.
+
+*-> As the purpose of the README is to offer a step-by-step of how to use the API, for the next controllers, I will leave just 
+the photos and a topic explaining the path params that are passed.*
+
+## EnderçoRestController (Address)
+
+Esse é o controller com os endpoints para gerenciar os endereços cadastrados. Os endereços são relacionados com as pessoas
+(clientes) no banco de dados
+
+*-> This is the controller with the endpoints to manage registered addresses. The addresses are related with the people
+(customers) in the database*
+
+![](aplicacao/src/main/resources/documentation.images/Endereco_Controller.png)
+
+### Salvar Endereço (Save an Address) "/api/enderecos"
+
+![](aplicacao/src/main/resources/documentation.images/Endereco_Save_Endpoint_RequestBody.png)
+
+![](aplicacao/src/main/resources/documentation.images/Endereco_Save_Endpoint_Success_Response.png)
+
