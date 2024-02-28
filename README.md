@@ -223,3 +223,11 @@ A phone can only be saved in the database when its owner (person) is already reg
 ![ ](aplicacao/src/main/resources/documentation.images/Telefone_Save_Endpoint_RequestBody.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Telefone_Save_Endpoint_Success_Response.png)
+
+---
+
+### Buscar um telefone por ID (Find a phone by ID) "/api/telefones/{id}"
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindById_Endpoint_PathParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindById_Endpoint_Success_Response.png)
