@@ -165,3 +165,11 @@ O ID será o ID do endereço que o usuário quer buscar.
 ![ ](aplicacao/src/main/resources/documentation.images/Endereco_FindById_Endpoint_PathParam.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Endereco_FindById_Endpoint_Success_Response.png)
+
+---
+
+### Buscar todos os endereços (Find all addresses) "/api/enderecos"
+
+![ ](aplicacao/src/main/resources/documentation.images/Endereco_FindAll_Endpoint_RequestParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Endereco_FindAll_Endpoint_Success_Response.png)
