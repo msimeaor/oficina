@@ -200,4 +200,26 @@ O ID passado será o ID do endereço que o usuário que atualizar. O corpo da re
 
 ![ ](aplicacao/src/main/resources/documentation.images/Endereco_Update_Endpoint_PathParams.png)
 
-![ ](aplicacao/src/main/resources/documentation.images/Endereco_Update_Endpoint_Success_Response.png) 
+![ ](aplicacao/src/main/resources/documentation.images/Endereco_Update_Endpoint_Success_Response.png)
+
+## TelefoneRestController (Phone)
+
+Este é o controller que gerencia todos os telefones dos clientes. Ele possui endpoint para salvar um novo telefone, 
+buscar telefones por ID ou pelo numero, buscar todos os telefones e atualizar um telefone.
+
+*-> This is the controller that manages all customer's phone. It has endpoints to save a new phone, search by ID or 
+number, search all phones and update.*
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefones_Endpoints.png)
+
+### Salvar telefone (Save a phone) "/api/telefones"
+
+O atributo "pessoaId" no objeto do request body recebe o ID da pessoa que vai ser relacionada a este telefone. 
+Um telefone só pode ser salvo no banco de dados quando o proprietário dele (pessoa) já estiver cadastrado também.
+
+*-> The "pessoaId" attribute in the request body object receives the ID of the person that will be related to this phone. 
+A phone can only be saved in the database when its owner (person) is already registered.*
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefone_Save_Endpoint_RequestBody.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefone_Save_Endpoint_Success_Response.png)
