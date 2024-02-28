@@ -154,3 +154,14 @@ Esse é o controller com os endpoints para gerenciar os endereços cadastrados. 
 
 ![](aplicacao/src/main/resources/documentation.images/Endereco_Save_Endpoint_Success_Response.png)
 
+---
+
+### Buscar endereço por ID (Find address by ID) "/api/enderecos/{id}"
+
+O ID será o ID do endereço que o usuário quer buscar.
+
+*-> The ID will be the ID that the user wants to search for*
+
+![ ](aplicacao/src/main/resources/documentation.images/Endereco_FindById_Endpoint_PathParam.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Endereco_FindById_Endpoint_Success_Response.png)
