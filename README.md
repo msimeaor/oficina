@@ -243,3 +243,9 @@ A phone can only be saved in the database when its owner (person) is already reg
 ![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindByNumero_Endpoint_PathParams.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindByNumero_Endpoint_Success_Response.png)
+
+### Atualizando um telefone (Update a phone) "/api/telefones/{id}"
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefone_Update_Endpoint_PathParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefone_Update_Endpoint_Success_Response.png)
