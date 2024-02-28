@@ -232,11 +232,15 @@ A phone can only be saved in the database when its owner (person) is already reg
 
 ![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindById_Endpoint_Success_Response.png)
 
+---
+
 ### Buscar todos os telefones (Find all phones) "/api/telefones"
 
 ![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindAll_Endpoint_RequestParams.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindAll_Endpoint_Success_Response.png)
+
+---
 
 ### Buscar um telefone pelo numero (Find a phone by number) "/api/telefones/findByNumero/{numero}"
 
@@ -244,8 +248,58 @@ A phone can only be saved in the database when its owner (person) is already reg
 
 ![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindByNumero_Endpoint_Success_Response.png)
 
+---
+
 ### Atualizando um telefone (Update a phone) "/api/telefones/{id}"
 
 ![ ](aplicacao/src/main/resources/documentation.images/Telefone_Update_Endpoint_PathParams.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Telefone_Update_Endpoint_Success_Response.png)
+
+## ServicoRestController (Service)
+
+Este é o controller que gerencia todos os serviços prestados pela oficina. Ele possui endpoints para salvar um novo 
+serviço, buscar e atualizar os dados.
+
+*-> This is the controller that manages all services provided by the workshop. It has endpoints to save a new service, 
+search and update data.*
+
+![ ](aplicacao/src/main/resources/documentation.images/Servico_Endpoints.png)
+
+### Salvar um serviço (Save a service) "/api/servicos"
+
+![ ](aplicacao/src/main/resources/documentation.images/Save_Service_RequestBody.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Save_Service_Success_Response.png)
+
+---
+
+### Buscando um serviço pelo ID (Find a service by ID) "/api/servicos/{id}"
+
+![ ](aplicacao/src/main/resources/documentation.images/Service_FindById_PathParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Service_FindById_Success_Response.png)
+
+---
+
+### Buscando todos os serviços (Find all services) "/api/servicos"
+
+![ ](aplicacao/src/main/resources/documentation.images/Servico_FindAll_RequestParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Servico_FindAll_Success_Response.png)
+
+---
+
+### Buscando um serviço pelo nome (Find a service by name) "/api/servicos/findByNome/{nome}"
+
+![ ](aplicacao/src/main/resources/documentation.images/Servico_FindByNome_PathParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Servico_FindByNome_Success_Response.png)
+
+---
+
+### Atualizar um serviço (Update a service) "/api/servicos/{id}"
+
+![ ](aplicacao/src/main/resources/documentation.images/Servico_Update_RequestBody.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Servico_Update_Success_Response.png)
