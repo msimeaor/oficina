@@ -173,3 +173,19 @@ O ID será o ID do endereço que o usuário quer buscar.
 ![ ](aplicacao/src/main/resources/documentation.images/Endereco_FindAll_Endpoint_RequestParams.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Endereco_FindAll_Endpoint_Success_Response.png)
+
+---
+
+### Buscar um endereço pelo logradouro (Find an address by street) "/api/enderecos/findByLogradouro/{logradouro}"
+
+A API retorna uma lista de endereços que contenham no logradouro um pedaço do logradouro buscado. Exemplo: O logradouro 
+buscado foi "Lote 101". A API vai retornar os endereços "Rua das Palmeiras Lote 101" e "Condomínio ACE Lote 101", mas 
+não vai retornar, por exemplo, "Condomínio ACE Lote 1011".
+
+*-> The API returns a list of addresses that contains in the street a piece of the searched street. For example: 
+The searched street was "Lote 101". The API will return the addresses "Rua das Palmeiras Lote 101" and "Condomínio 
+ACE Lote 101", but will not return, for example, "Condomínio ACE Lote 1011".*
+
+![ ](aplicacao/src/main/resources/documentation.images/Enderecos_FindByLogradouro_Endpoint_PathParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Enderecos_FindByLogradouro_Endpoint_Success_Response.png)
