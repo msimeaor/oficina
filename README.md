@@ -231,3 +231,15 @@ A phone can only be saved in the database when its owner (person) is already reg
 ![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindById_Endpoint_PathParams.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindById_Endpoint_Success_Response.png)
+
+### Buscar todos os telefones (Find all phones) "/api/telefones"
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindAll_Endpoint_RequestParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindAll_Endpoint_Success_Response.png)
+
+### Buscar um telefone pelo numero (Find a phone by number) "/api/telefones/findByNumero/{numero}"
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindByNumero_Endpoint_PathParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Telefones_FindByNumero_Endpoint_Success_Response.png)
