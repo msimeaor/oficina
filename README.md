@@ -189,3 +189,15 @@ ACE Lote 101", but will not return, for example, "Condomínio ACE Lote 1011".*
 ![ ](aplicacao/src/main/resources/documentation.images/Enderecos_FindByLogradouro_Endpoint_PathParams.png)
 
 ![ ](aplicacao/src/main/resources/documentation.images/Enderecos_FindByLogradouro_Endpoint_Success_Response.png)
+
+---
+
+### Atualizando endereço (Updating an address) "/api/enderecos/{id}"
+
+O ID passado será o ID do endereço que o usuário que atualizar. O corpo da requisição carrega o objeto já atualizado.
+
+*-> The ID passed will be the ID of the address that the user wants to update. The request body carries the updated object.*
+
+![ ](aplicacao/src/main/resources/documentation.images/Endereco_Update_Endpoint_PathParams.png)
+
+![ ](aplicacao/src/main/resources/documentation.images/Endereco_Update_Endpoint_Success_Response.png) 
