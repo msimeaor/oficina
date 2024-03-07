@@ -10,6 +10,7 @@ import io.github.msimeaor.aplicacao.exceptions.servico.ServicoConflictException;
 import io.github.msimeaor.aplicacao.exceptions.servico.ServicoNotFoundException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneConflictException;
 import io.github.msimeaor.aplicacao.exceptions.telefone.TelefoneNotFoundException;
+import io.github.msimeaor.aplicacao.exceptions.veiculo.VeiculoConflictException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -67,6 +68,11 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
   @ExceptionHandler(ServicoNotFoundException.class)
   public ResponseEntity<ExceptionResponse> servicoNotFound(Exception ex, WebRequest request) {
     return criarExceptionResponseERetornarResponseEntity(HttpStatus.NOT_FOUND, ex, request);
+  }
+
+  @ExceptionHandler(VeiculoConflictException.class)
+  public ResponseEntity<ExceptionResponse> veiculoConflict(Exception ex, WebRequest request) {
+    return criarExceptionResponseERetornarResponseEntity(HttpStatus.CONFLICT, ex, request);
   }
 
   private ResponseEntity<ExceptionResponse> criarExceptionResponseERetornarResponseEntity(
