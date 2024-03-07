@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.msimeaor.aplicacao.config.TestConfigs;
 import io.github.msimeaor.aplicacao.enums.Fabricantes;
+import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.integration.dto.request.VeiculoRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.VeiculoResponseDTOTest;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
@@ -12,6 +13,7 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,6 +64,28 @@ class VeiculoRestControllerTest extends AbstractIntegrationTest {
     assertEquals("100.000", veiculoResponseDTOTest.getKmAtual());
     assertEquals("Observacao Teste", veiculoResponseDTOTest.getObservacao());
     assertEquals(Fabricantes.AUDI, veiculoResponseDTOTest.getFabricante());
+  }
+
+  @Test
+  @Order(2)
+  void saveVehicleWithARepeatedCarPlate() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/veiculos")
+            .body(veiculoRequestDTOTest)
+            .when()
+              .post()
+            .then()
+              .statusCode(409)
+            .extract()
+              .body()
+                .asString();
+
+    var exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertEquals(ExceptionResponse.class, exceptionResponse.getClass());
+    assertEquals(HttpStatus.CONFLICT.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Veiculo já cadastrado!", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/veiculos", exceptionResponse.getDetalhesErro());
   }
 
   public static void startEntities() {
