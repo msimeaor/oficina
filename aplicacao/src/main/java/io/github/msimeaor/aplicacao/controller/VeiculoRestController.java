@@ -12,10 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/veiculos")
@@ -56,6 +53,11 @@ public class VeiculoRestController {
   @PostMapping()
   public ResponseEntity<VeiculoResponseDTO> save(@RequestBody @Valid VeiculoRequestDTO veiculoRequestDTO) {
     return service.save(veiculoRequestDTO);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<VeiculoResponseDTO> findById(@PathVariable("id") Long id) {
+    return service.findById(id);
   }
 
 }
