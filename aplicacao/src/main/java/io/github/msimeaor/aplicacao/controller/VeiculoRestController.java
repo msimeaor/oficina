@@ -55,6 +55,31 @@ public class VeiculoRestController {
     return service.save(veiculoRequestDTO);
   }
 
+  @Operation(summary = "Find a vehicle by ID", description = "Find a vehicle by ID",
+    tags = {"Find"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "200",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = VeiculoResponseDTO.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Vehicle not found in database", responseCode = "404",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   @GetMapping("/{id}")
   public ResponseEntity<VeiculoResponseDTO> findById(@PathVariable("id") Long id) {
     return service.findById(id);
