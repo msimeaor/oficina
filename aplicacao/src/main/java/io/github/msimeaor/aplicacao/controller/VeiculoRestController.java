@@ -10,6 +10,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -83,6 +88,18 @@ public class VeiculoRestController {
   @GetMapping("/{id}")
   public ResponseEntity<VeiculoResponseDTO> findById(@PathVariable("id") Long id) {
     return service.findById(id);
+  }
+
+  @GetMapping()
+  public ResponseEntity<PagedModel<EntityModel<VeiculoResponseDTO>>> findAll(
+          @RequestParam(name = "page", defaultValue = "0", required = false) Integer page,
+          @RequestParam(name = "size", defaultValue = "5", required = false) Integer size,
+          @RequestParam(name = "direction", defaultValue = "ASC", required = false) String direction
+  ) {
+
+    var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, "nome"));
+    return service.findAll(pageable);
   }
 
 }
