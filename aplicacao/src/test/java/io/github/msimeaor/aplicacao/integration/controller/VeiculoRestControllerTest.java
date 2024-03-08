@@ -88,6 +88,26 @@ class VeiculoRestControllerTest extends AbstractIntegrationTest {
     assertEquals("uri=/api/veiculos", exceptionResponse.getDetalhesErro());
   }
 
+  @Test
+  @Order(3)
+  void findByIdWithAValidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/veiculos")
+            .pathParam("id", 1L)
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var veiculoResponseDTO = mapper.readValue(content, VeiculoResponseDTOTest.class);
+
+    assertEquals(VeiculoResponseDTOTest.class, veiculoResponseDTO.getClass());
+    assertEquals(1L, veiculoResponseDTO.getId());
+  }
+
   public static void startEntities() {
     veiculoRequestDTOTest = VeiculoRequestDTOTest.builder()
             .nome("Veiculo Teste")
