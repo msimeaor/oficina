@@ -108,6 +108,28 @@ class VeiculoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(1L, veiculoResponseDTO.getId());
   }
 
+  @Test
+  @Order(4)
+  void findByIdWithAnInvalidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/veiculos")
+            .pathParam("id", 2L)
+            .when()
+              .get("{id}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    var exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertEquals(ExceptionResponse.class, exceptionResponse.getClass());
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Veiculo não encontrado! ID: " + 2L, exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/veiculos/2", exceptionResponse.getDetalhesErro());
+  }
+
   public static void startEntities() {
     veiculoRequestDTOTest = VeiculoRequestDTOTest.builder()
             .nome("Veiculo Teste")
