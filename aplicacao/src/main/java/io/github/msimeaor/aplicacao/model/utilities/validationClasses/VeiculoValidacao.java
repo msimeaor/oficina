@@ -2,7 +2,6 @@ package io.github.msimeaor.aplicacao.model.utilities.validationClasses;
 
 import io.github.msimeaor.aplicacao.exceptions.geral.EmptyListException;
 import io.github.msimeaor.aplicacao.exceptions.veiculo.VeiculoConflictException;
-import io.github.msimeaor.aplicacao.model.entity.Veiculo;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
