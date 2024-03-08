@@ -8,6 +8,7 @@ import io.github.msimeaor.aplicacao.enums.Fabricantes;
 import io.github.msimeaor.aplicacao.exceptions.ExceptionResponse;
 import io.github.msimeaor.aplicacao.integration.dto.request.VeiculoRequestDTOTest;
 import io.github.msimeaor.aplicacao.integration.dto.response.VeiculoResponseDTOTest;
+import io.github.msimeaor.aplicacao.integration.helper.veiculo.VeiculoWrapper;
 import io.github.msimeaor.aplicacao.integration.testcontainer.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
@@ -15,6 +16,8 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static io.restassured.RestAssured.*;
@@ -128,6 +131,26 @@ class VeiculoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
     assertEquals("Veiculo não encontrado! ID: " + 2L, exceptionResponse.getMensagemErro());
     assertEquals("uri=/api/veiculos/2", exceptionResponse.getDetalhesErro());
+  }
+
+  @Test
+  @Order(5)
+  void findAllWithSuccess() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/veiculos")
+            .when()
+              .get()
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    VeiculoWrapper response = mapper.readValue(content, VeiculoWrapper.class);
+    List<VeiculoResponseDTOTest> veiculoResponseDTOTestList = response.getEmbedded().getVeiculoResponseDTOList();
+
+    assertTrue(veiculoResponseDTOTestList.size() > 0);
+    assertEquals(1L, veiculoResponseDTOTestList.get(0).getId());
   }
 
   public static void startEntities() {
