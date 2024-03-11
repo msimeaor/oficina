@@ -29,6 +29,7 @@ class VeiculoRestControllerTest extends AbstractIntegrationTest {
   private static RequestSpecification specification;
   private static ObjectMapper mapper;
   private static VeiculoRequestDTOTest veiculoRequestDTOTest;
+  private static VeiculoRequestDTOTest veiculoRequestDTOTestUpdated;
 
   @BeforeEach
   void setUp() {
@@ -195,6 +196,55 @@ class VeiculoRestControllerTest extends AbstractIntegrationTest {
     assertEquals("uri=/api/veiculos/findByPlaca/BBB1111", exceptionResponse.getDetalhesErro());
   }
 
+  @Test
+  @Order(8)
+  void updateWithAnInvalidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/veiculos")
+            .pathParam("id", 2L)
+            .body(veiculoRequestDTOTestUpdated)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    var exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertEquals(ExceptionResponse.class, exceptionResponse.getClass());
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Veiculo não encontrado! ID: 2", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/veiculos/2", exceptionResponse.getDetalhesErro());
+  }
+
+  @Test
+  @Order(9)
+  void updateWithAValidId() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/veiculos")
+            .pathParam("id", 1L)
+            .body(veiculoRequestDTOTestUpdated)
+            .when()
+              .put("{id}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var veiculoResponseDTO = mapper.readValue(content, VeiculoResponseDTOTest.class);
+
+    assertEquals(VeiculoResponseDTOTest.class, veiculoResponseDTO.getClass());
+    assertEquals(1L, veiculoResponseDTO.getId());
+    assertEquals("Veiculo Atualizado", veiculoResponseDTO.getNome());
+    assertEquals("BBB1111", veiculoResponseDTO.getPlaca());
+    assertEquals("200.000", veiculoResponseDTO.getKmAtual());
+    assertEquals("Veiculo Atualizado Corretamente", veiculoResponseDTO.getObservacao());
+    assertEquals(Fabricantes.FIAT, veiculoResponseDTO.getFabricante());
+  }
+
   public static void startEntities() {
     veiculoRequestDTOTest = VeiculoRequestDTOTest.builder()
             .nome("Veiculo Teste")
@@ -202,6 +252,14 @@ class VeiculoRestControllerTest extends AbstractIntegrationTest {
             .kmAtual("100.000")
             .fabricante(Fabricantes.AUDI)
             .observacao("Observacao Teste")
+            .build();
+
+    veiculoRequestDTOTestUpdated = VeiculoRequestDTOTest.builder()
+            .nome("Veiculo Atualizado")
+            .placa("BBB1111")
+            .kmAtual("200.000")
+            .fabricante(Fabricantes.FIAT)
+            .observacao("Veiculo Atualizado Corretamente")
             .build();
   }
 
