@@ -158,4 +158,11 @@ public class VeiculoRestController {
     return service.findByPlaca(placa);
   }
 
+  @PutMapping("{id}")
+  public ResponseEntity<VeiculoResponseDTO> update(@RequestBody @Valid VeiculoRequestDTO veiculoRequestDTO,
+                                                   @PathVariable("id") Long id) {
+
+    return service.update(veiculoRequestDTO, id);
+  }
+
 }

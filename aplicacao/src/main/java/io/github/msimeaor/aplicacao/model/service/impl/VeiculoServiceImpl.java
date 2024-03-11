@@ -8,6 +8,7 @@ import io.github.msimeaor.aplicacao.model.entity.Veiculo;
 import io.github.msimeaor.aplicacao.model.repository.VeiculoRepository;
 import io.github.msimeaor.aplicacao.model.service.VeiculoService;
 import io.github.msimeaor.aplicacao.model.utilities.HateoasLinkBuilder;
+import io.github.msimeaor.aplicacao.model.utilities.dataChangeClasses.AtualizaDadosVeiculo;
 import io.github.msimeaor.aplicacao.model.utilities.dataPersistence.VeiculoPersistencia;
 import io.github.msimeaor.aplicacao.model.utilities.search.BuscaVeiculo;
 import io.github.msimeaor.aplicacao.model.utilities.validationClasses.VeiculoValidacao;
@@ -29,18 +30,21 @@ public class VeiculoServiceImpl implements VeiculoService {
   private VeiculoValidacao veiculoValidacao;
   private VeiculoPersistencia veiculoPersistencia;
   private BuscaVeiculo buscaVeiculo;
+  private AtualizaDadosVeiculo atualizaDadosVeiculo;
 
   public VeiculoServiceImpl(PagedResourcesAssembler<VeiculoResponseDTO> assembler,
                             VeiculoRepository repository,
                             VeiculoValidacao veiculoValidacao,
                             VeiculoPersistencia veiculoPersistencia,
-                            BuscaVeiculo buscaVeiculo) {
+                            BuscaVeiculo buscaVeiculo,
+                            AtualizaDadosVeiculo atualizaDadosVeiculo) {
 
     this.assembler = assembler;
     this.repository = repository;
     this.veiculoValidacao = veiculoValidacao;
     this.veiculoPersistencia = veiculoPersistencia;
     this.buscaVeiculo = buscaVeiculo;
+    this.atualizaDadosVeiculo = atualizaDadosVeiculo;
   }
 
   public ResponseEntity<VeiculoResponseDTO> save(VeiculoRequestDTO veiculoRequestDTO) {
@@ -74,6 +78,16 @@ public class VeiculoServiceImpl implements VeiculoService {
     Veiculo veiculo = buscaVeiculo.buscarPorAtributo(repository, placa);
     VeiculoResponseDTO veiculoResponseDTO = DozerMapper.parseObject(veiculo, VeiculoResponseDTO.class);
     // TODO criar links HATEOAS de vendas para o veiculoResponseDTO
+
+    return new ResponseEntity<>(veiculoResponseDTO, HttpStatus.OK);
+  }
+
+  public ResponseEntity<VeiculoResponseDTO> update(VeiculoRequestDTO veiculoRequestDTO, Long id) {
+    Veiculo veiculo = buscaVeiculo.buscarPorId(repository, id);
+    veiculo = atualizaDadosVeiculo.atualizarDados(veiculoRequestDTO, veiculo);
+    veiculo = veiculoPersistencia.salvar(veiculo, repository);
+    VeiculoResponseDTO veiculoResponseDTO = DozerMapper.parseObject(veiculo, VeiculoResponseDTO.class);
+    // TODO criar links HATEOAS de vendas
 
     return new ResponseEntity<>(veiculoResponseDTO, HttpStatus.OK);
   }
