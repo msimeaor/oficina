@@ -128,4 +128,9 @@ public class VeiculoRestController {
     return service.findAll(pageable);
   }
 
+  @GetMapping("/findByPlaca/{placa}")
+  public ResponseEntity<VeiculoResponseDTO> findByPlaca(@PathVariable("placa") String placa) {
+    return service.findByPlaca(placa);
+  }
+
 }

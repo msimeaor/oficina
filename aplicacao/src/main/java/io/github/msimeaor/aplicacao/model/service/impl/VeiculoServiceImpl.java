@@ -70,4 +70,12 @@ public class VeiculoServiceImpl implements VeiculoService {
     return new ResponseEntity<>(assembler.toModel(veiculoResponseDTOPage, link), HttpStatus.OK);
   }
 
+  public ResponseEntity<VeiculoResponseDTO> findByPlaca(String placa) {
+    Veiculo veiculo = buscaVeiculo.buscarPorAtributo(repository, placa);
+    VeiculoResponseDTO veiculoResponseDTO = DozerMapper.parseObject(veiculo, VeiculoResponseDTO.class);
+    // TODO criar links HATEOAS de vendas para o veiculoResponseDTO
+
+    return new ResponseEntity<>(veiculoResponseDTO, HttpStatus.OK);
+  }
+
 }

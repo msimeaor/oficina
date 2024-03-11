@@ -12,5 +12,6 @@ public interface VeiculoService {
   ResponseEntity<VeiculoResponseDTO> save(VeiculoRequestDTO veiculoRequestDTO);
   ResponseEntity<VeiculoResponseDTO> findById(Long id);
   ResponseEntity<PagedModel<EntityModel<VeiculoResponseDTO>>> findAll(Pageable pageable);
+  ResponseEntity<VeiculoResponseDTO> findByPlaca(String placa);
 
 }
