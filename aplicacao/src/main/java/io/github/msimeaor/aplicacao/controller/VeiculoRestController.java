@@ -128,6 +128,31 @@ public class VeiculoRestController {
     return service.findAll(pageable);
   }
 
+  @Operation(summary = "Find a vehicle by license plate", description = "Find a vehicle by license plate",
+    tags = {"Find"},
+    responses = {
+      @ApiResponse(description = "Success", responseCode = "200",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = VeiculoResponseDTO.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Vehicle not found in the databas", responseCode = "404",
+        content = {
+          @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = ExceptionResponse.class)
+          )
+        }
+      ),
+      @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+      @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+      @ApiResponse(description = "Forbiden", responseCode = "403", content = @Content),
+      @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+    }
+  )
   @GetMapping("/findByPlaca/{placa}")
   public ResponseEntity<VeiculoResponseDTO> findByPlaca(@PathVariable("placa") String placa) {
     return service.findByPlaca(placa);
