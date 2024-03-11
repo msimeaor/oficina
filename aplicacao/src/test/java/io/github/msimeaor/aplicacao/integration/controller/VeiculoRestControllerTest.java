@@ -153,6 +153,48 @@ class VeiculoRestControllerTest extends AbstractIntegrationTest {
     assertEquals(1L, veiculoResponseDTOTestList.get(0).getId());
   }
 
+  @Test
+  @Order(6)
+  void findByPlacaWithAValidPlaca() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/veiculos/findByPlaca")
+            .pathParam("placa", "AAA0000")
+            .when()
+              .get("{placa}")
+            .then()
+              .statusCode(200)
+            .extract()
+              .body()
+                .asString();
+
+    var veiculoResponseDTO = mapper.readValue(content, VeiculoResponseDTOTest.class);
+
+    assertEquals(VeiculoResponseDTOTest.class, veiculoResponseDTO.getClass());
+    assertEquals("AAA0000", veiculoResponseDTO.getPlaca());
+  }
+
+  @Test
+  @Order(7)
+  void findByPlacaWithAnInvalidPlaca() throws JsonProcessingException {
+    var content = given().spec(specification)
+            .basePath("/api/veiculos/findByPlaca")
+            .pathParam("placa", "BBB1111")
+            .when()
+              .get("{placa}")
+            .then()
+              .statusCode(404)
+            .extract()
+              .body()
+                .asString();
+
+    var exceptionResponse = mapper.readValue(content, ExceptionResponse.class);
+
+    assertEquals(ExceptionResponse.class, exceptionResponse.getClass());
+    assertEquals(HttpStatus.NOT_FOUND.value(), exceptionResponse.getCodigoStatus());
+    assertEquals("Veiculo não encontrado! Placa: " + "BBB1111", exceptionResponse.getMensagemErro());
+    assertEquals("uri=/api/veiculos/findByPlaca/BBB1111", exceptionResponse.getDetalhesErro());
+  }
+
   public static void startEntities() {
     veiculoRequestDTOTest = VeiculoRequestDTOTest.builder()
             .nome("Veiculo Teste")
