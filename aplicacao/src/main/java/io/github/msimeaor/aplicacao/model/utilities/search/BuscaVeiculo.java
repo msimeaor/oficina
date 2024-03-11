@@ -21,4 +21,10 @@ public class BuscaVeiculo implements BuscaRegistro<Veiculo, VeiculoRepository> {
     return repository.findAll(pageable);
   }
 
+  public Veiculo buscarPorAtributo(VeiculoRepository repository, Object atributo) {
+    String placa = (String) atributo;
+    return repository.findByPlaca(placa).orElseThrow(
+            () -> new VeiculoNotFoundException("Veiculo não encontrado! Placa: " + placa));
+  }
+
 }

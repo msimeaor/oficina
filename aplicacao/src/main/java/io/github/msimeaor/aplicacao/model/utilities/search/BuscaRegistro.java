@@ -7,5 +7,6 @@ public interface BuscaRegistro<O, R> {
 
   O buscarPorId(R repository, Long id);
   Page<O> buscarTodosRegistros(R repository, Pageable pageable);
+  O buscarPorAtributo(R repository, Object atributo);
 
 }
